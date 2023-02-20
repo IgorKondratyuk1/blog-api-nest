@@ -6,7 +6,7 @@ export class TestingController {
   constructor(private readonly testingService: TestingService) {}
 
   @HttpCode(204)
-  @Delete('/testing/all-data')
+  @Delete('/all-data')
   async remove() {
     return await this.testingService.removeAll();
   }
