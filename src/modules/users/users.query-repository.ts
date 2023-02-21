@@ -7,18 +7,16 @@ import { QueryUserModel, UserFilterType } from './types/user';
 import ViewUserDto from './dto/view-user.dto';
 import { UsersMapper } from './utils/users.mapper';
 import { Pagination } from '../../common/utils/pagination';
+import { Paginator } from '../../common/types/pagination';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  // : Promise<Paginator<ViewUserModel>>
-  async findAll(queryObj: QueryUserModel) {
-    const filters: UserFilterType = Pagination.getUserFilters(queryObj);
-    const skipValue: number = Pagination.getSkipValue(
-      filters.pageNumber,
-      filters.pageSize,
-    );
+  async findAll(queryObj: QueryUserModel): Promise<Paginator<ViewUserDto>> {
+    const filters: UserFilterType = Pagination.getUserFilters(queryObj); // TODO Delete
+    console.log(filters);
+    const skipValue: number = Pagination.getSkipValue(filters.pageNumber, filters.pageSize);
     const sortValue: 1 | -1 = Pagination.getSortValue(filters.sortDirection);
     const searchLoginTermValue = filters.searchLoginTerm || '';
     const searchEmailTermValue = filters.searchEmailTerm || '';
@@ -40,10 +38,12 @@ export class UsersQueryRepository {
           },
         ],
       })
-      .sort({ [filters.sortBy]: sortValue })
+      .sort({ [`accountData.${filters.sortBy}`]: sortValue })
       .skip(skipValue)
       .limit(filters.pageSize)
       .lean();
+
+    console.log(foundedUsers);
 
     const usersViewModels: ViewUserDto[] = foundedUsers.map(UsersMapper.toView);
     const totalCount: number = await this.userModel.countDocuments({

@@ -1,3 +1,21 @@
+import { IsOptional } from 'class-validator';
+
+export class QueryTypeC {
+  @IsOptional()
+  searchNameTerm: string = null;
+
+  @IsOptional()
+  pageNumber = '1';
+
+  @IsOptional()
+  pageSize = '10';
+
+  @IsOptional()
+  sortBy = 'createdAt';
+  @IsOptional()
+  sortDirection = '-1';
+}
+
 export type QueryType = {
   searchNameTerm?: string;
   pageNumber?: string;

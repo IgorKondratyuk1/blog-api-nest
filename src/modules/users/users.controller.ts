@@ -8,11 +8,14 @@ import {
   Query,
   HttpCode,
   NotFoundException,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { QueryType } from '../../common/types/pagination';
 import { UsersQueryRepository } from './users.query-repository';
+import { QueryUserModel } from './types/user';
 
 @Controller('users')
 export class UsersController {
@@ -27,7 +30,9 @@ export class UsersController {
   }
 
   @Get()
-  findAll(@Query() query: QueryType) {
+  @UsePipes(new ValidationPipe({ transform: true }))
+  findAll(@Query() query: QueryUserModel) {
+    console.log(query);
     return this.usersQueryRepository.findAll(query);
   }
 
