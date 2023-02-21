@@ -1,4 +1,4 @@
-export class ViewCreatePostDto {
+export class ViewLimitedPostDto {
   constructor(
     public id: string,
     public title: string,

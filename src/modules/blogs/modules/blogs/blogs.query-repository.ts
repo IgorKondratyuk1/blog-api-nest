@@ -12,7 +12,7 @@ export class BlogsQueryRepository {
 
   async findOne(id: string) {
     const dbBlog = await this.blogModel.findOne({ id });
-    if (!dbBlog) throw new NotFoundException();
+    if (!dbBlog) return null;
 
     return BlogMapper.toView(dbBlog);
   }

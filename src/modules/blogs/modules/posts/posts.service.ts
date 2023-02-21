@@ -5,13 +5,13 @@ import { PostsRepository } from './posts.repository';
 import { BlogDocument } from '../blogs/schemas/blog.schema';
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { PostsMapper } from './utils/posts.mapper';
-import { ViewCreatePostDto } from './dto/view-create-post.dto';
+import { ViewLimitedPostDto } from './dto/view-limited-post.dto';
 
 @Injectable()
 export class PostsService {
   constructor(private postsRepository: PostsRepository, private blogsRepository: BlogsRepository) {}
 
-  async create(createPostDto: CreatePostDto, blogId: string): Promise<ViewCreatePostDto> {
+  async create(createPostDto: CreatePostDto, blogId: string): Promise<ViewLimitedPostDto> {
     if (!blogId) throw new BadRequestException('Wrong blogId');
 
     const blog: BlogDocument | null = await this.blogsRepository.findOne(blogId);
@@ -19,7 +19,7 @@ export class PostsService {
 
     const createdPost = await this.postsRepository.create(createPostDto, blog.id, blog.name);
 
-    return PostsMapper.toCreatedView(createdPost);
+    return PostsMapper.toLimitedView(createdPost);
   }
 
   async findOne(id: string) {
@@ -28,7 +28,7 @@ export class PostsService {
 
   async update(id: string, updatePostDto: UpdatePostDto): Promise<boolean> {
     const post = await this.postsRepository.findOne(id);
-    if (!post) throw new NotFoundException('Post not found');
+    if (!post) return false;
 
     post.updatePost(updatePostDto);
     const result = await this.postsRepository.save(post);

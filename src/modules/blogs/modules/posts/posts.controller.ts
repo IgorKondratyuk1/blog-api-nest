@@ -40,7 +40,9 @@ export class PostsController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.postsQueryRepository.findOne(id);
+    const post = await this.postsQueryRepository.findOne(id);
+    if (!post) throw new NotFoundException('Post is not found');
+    return post;
   }
 
   @Get(':id/comments')
@@ -54,7 +56,9 @@ export class PostsController {
   @Put(':id')
   @HttpCode(204)
   async update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return await this.postsService.update(id, updatePostDto);
+    const result: boolean = await this.postsService.update(id, updatePostDto);
+    if (!result) throw new NotFoundException('Post is not found');
+    return;
   }
 
   // TODO Question: HttpCode - return only code. How to return other code and data.

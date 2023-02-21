@@ -1,7 +1,7 @@
 import { Post, PostDocument } from '../schemas/post.schema';
 import { ViewPostDto } from '../dto/view-post.dto';
 import { ExtendedLikesInfo } from '../../likes/types/like';
-import { ViewCreatePostDto } from '../dto/view-create-post.dto';
+import { ViewLimitedPostDto } from '../dto/view-limited-post.dto';
 
 export class PostsMapper {
   public static toView(post: Post | PostDocument, extendedLikesInfo: ExtendedLikesInfo) {
@@ -17,8 +17,8 @@ export class PostsMapper {
     );
   }
 
-  public static toCreatedView(post: Post | PostDocument) {
-    return new ViewCreatePostDto(
+  public static toLimitedView(post: Post | PostDocument) {
+    return new ViewLimitedPostDto(
       post.id,
       post.title,
       post.shortDescription,

@@ -53,13 +53,17 @@ export class BlogsController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.blogsQueryRepository.findOne(id);
+    const blog = await this.blogsQueryRepository.findOne(id);
+    if (!blog) throw new NotFoundException('Blog is not found');
+    return blog;
   }
 
   @Put(':id')
   @HttpCode(204)
   async update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return await this.blogsService.update(id, updateBlogDto);
+    const result: boolean = await this.blogsService.update(id, updateBlogDto);
+    if (!result) throw new NotFoundException('Blog is not found');
+    return;
   }
 
   @Delete(':id')
