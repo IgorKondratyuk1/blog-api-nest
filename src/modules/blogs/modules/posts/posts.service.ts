@@ -19,7 +19,7 @@ export class PostsService {
 
     const createdPost = await this.postsRepository.create(createPostDto, blog.id, blog.name);
 
-    return PostsMapper.toLimitedView(createdPost);
+    return PostsMapper.toView(createdPost);
   }
 
   async findOne(id: string) {

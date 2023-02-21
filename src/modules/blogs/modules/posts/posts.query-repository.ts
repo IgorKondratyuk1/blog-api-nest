@@ -17,7 +17,7 @@ export class PostsQueryRepository {
     if (!post) return null;
 
     const extendedLikesInfo = new ExtendedLikesInfo();
-    return PostsMapper.toLimitedView(post); // mapPostTypeToPostViewModel(post, likeStatus, lastLikes);
+    return PostsMapper.toView(post); // mapPostTypeToPostViewModel(post, likeStatus, lastLikes);
   }
 
   async findAll(queryObj: QueryType, currentUserId: string = null) {
@@ -49,7 +49,7 @@ export class PostsQueryRepository {
         // );
 
         const extendedLikesInfo: ExtendedLikesInfo = new ExtendedLikesInfo();
-        return PostsMapper.toLimitedView(post);
+        return PostsMapper.toView(post);
       }),
     );
     const totalCount: number = await this.postModel.countDocuments();
@@ -97,7 +97,7 @@ export class PostsQueryRepository {
 
         const extendedLikesInfo: ExtendedLikesInfo = new ExtendedLikesInfo();
 
-        return PostsMapper.toLimitedView(post);
+        return PostsMapper.toView(post);
       }),
     );
 
