@@ -41,7 +41,7 @@ export class BlogsRepository {
   async remove(id: string): Promise<boolean> {
     try {
       const result = await this.blogModel.deleteOne({ id });
-      return result.deletedCount !== 1;
+      return result.deletedCount === 1;
     } catch (e) {
       console.log(e);
       return false;

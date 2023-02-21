@@ -66,8 +66,8 @@ export class PostsQueryRepository {
 
   async findPostsOfBlog(
     blogId: string,
-    currentUserId: string,
     queryObj: QueryType,
+    currentUserId: string = null,
   ): Promise<Paginator<any>> {
     const filters: FilterType = Pagination.getFilters(queryObj);
     const skipValue: number = Pagination.getSkipValue(filters.pageNumber, filters.pageSize);

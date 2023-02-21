@@ -9,6 +9,7 @@ import {
   Query,
   Put,
   HttpCode,
+  NotFoundException,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -60,6 +61,8 @@ export class PostsController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id: string) {
-    return await this.postsService.remove(id);
+    const result = await this.postsService.remove(id);
+    if (!result) throw new NotFoundException('Post is not found');
+    return;
   }
 }

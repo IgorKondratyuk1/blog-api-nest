@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, HttpCode, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  HttpCode,
+  Query,
+  NotFoundException,
+} from '@nestjs/common';
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
@@ -34,7 +45,10 @@ export class BlogsController {
 
   @Get(':id/posts')
   async findAllPostsOfBlog(@Param('id') id: string, @Query() query: QueryType) {
-    return await this.postsQueryRepository.findAll(query);
+    const blog = await this.blogsService.findOne(id);
+    if (!blog) throw new NotFoundException('Blog is not found');
+
+    return await this.postsQueryRepository.findPostsOfBlog(id, query);
   }
 
   @Get(':id')
@@ -51,6 +65,8 @@ export class BlogsController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id: string) {
-    return await this.blogsService.remove(id);
+    const result = await this.blogsService.remove(id);
+    if (!result) throw new NotFoundException('Blog is not found');
+    return;
   }
 }

@@ -7,8 +7,8 @@ export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 
   async create(createUserDto: CreateUserDto, isConfirmed = false) {
-    const cretedUser = await this.usersRepository.create(createUserDto, isConfirmed);
-    return;
+    const createdUser = await this.usersRepository.create(createUserDto, isConfirmed);
+    return createdUser;
   }
 
   async findOne(id: string) {

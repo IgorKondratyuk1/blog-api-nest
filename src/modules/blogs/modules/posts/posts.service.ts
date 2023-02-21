@@ -2,21 +2,24 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsRepository } from './posts.repository';
-import { Post } from './schemas/post.schema';
 import { BlogDocument } from '../blogs/schemas/blog.schema';
 import { BlogsRepository } from '../blogs/blogs.repository';
+import { PostsMapper } from './utils/posts.mapper';
+import { ViewCreatePostDto } from './dto/view-create-post.dto';
 
 @Injectable()
 export class PostsService {
   constructor(private postsRepository: PostsRepository, private blogsRepository: BlogsRepository) {}
 
-  async create(createPostDto: CreatePostDto, blogId: string): Promise<Post> {
+  async create(createPostDto: CreatePostDto, blogId: string): Promise<ViewCreatePostDto> {
     if (!blogId) throw new BadRequestException('Wrong blogId');
 
     const blog: BlogDocument | null = await this.blogsRepository.findOne(blogId);
     if (!blog) throw new NotFoundException('Blog is not found');
 
-    return this.postsRepository.create(createPostDto, blog.id, blog.name);
+    const createdPost = await this.postsRepository.create(createPostDto, blog.id, blog.name);
+
+    return PostsMapper.toCreatedView(createdPost);
   }
 
   async findOne(id: string) {

@@ -44,8 +44,7 @@ export class UsersRepository {
 
   async remove(id: string) {
     const result = await this.userModel.deleteOne({ id });
-    if (result.deletedCount !== 1) throw new NotFoundException();
-    return result;
+    return result.deletedCount === 1;
   }
 
   async removeAll() {

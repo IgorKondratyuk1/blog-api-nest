@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  MinLength,
-  Validate,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength, Validate } from 'class-validator';
 import { UserExistsRule } from '../../../common/validators/user-exists.validator';
 
 export class CreateUserDto {

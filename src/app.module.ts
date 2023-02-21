@@ -13,7 +13,6 @@ import { TestingModule } from './modules/testing/testing.module';
     }),
     UsersModule,
     BlogsCompositionModule,
-    CommentsModule,
     TestingModule,
   ],
 })

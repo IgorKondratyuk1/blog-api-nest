@@ -31,7 +31,7 @@ export class PostsRepository {
   async remove(id: string) {
     try {
       const result = await this.postModel.deleteOne({ id });
-      return result.deletedCount !== 1;
+      return result.deletedCount === 1;
     } catch (e) {
       console.log(e);
       return false;
