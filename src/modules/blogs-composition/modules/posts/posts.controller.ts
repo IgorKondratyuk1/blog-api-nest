@@ -33,6 +33,7 @@ import { CustomErrorDto } from '../../../../common/dto/error';
 import { JwtAccessSoftAuthGuard } from '../../../auth/guards/jwt-access-soft-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user-id.param.decorator';
 import { ViewPostDto } from './dto/view-post.dto';
+import { PostDocument } from './schemas/post.schema';
 
 @Controller('posts')
 export class PostsController {
@@ -91,6 +92,8 @@ export class PostsController {
     @Query() query: QueryDto,
     @CurrentUserId() userId: string,
   ): Promise<PaginationDto<ViewCommentDto>> {
+    const post: PostDocument | null = await this.postsService.findOne(id);
+    if (!post) throw new NotFoundException('post not found');
     return await this.commentsQueryRepository.findCommentsOfPost(id, query, userId);
   }
 

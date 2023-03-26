@@ -90,7 +90,7 @@ export class LikesRepository {
         locationName,
         myStatus: 'Like',
       })
-      .sort({ updatedAt: -1 })
+      .sort({ createdAt: -1 })
       .limit(limitCount)
       .lean();
     return dbLikes;
