@@ -12,7 +12,8 @@ import { BasicStrategy } from './strategies/basic.strategy';
 import { SecurityConfigService } from '../../config/config-services/security-config.service';
 import { JwtAccessStrictStrategy } from './strategies/jwt-access-strict.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
-//import { JwtAccessSoftStrategy } from './strategies/jwt-access-soft.strategy';
+import { EmailResendRule } from './validators/resend-email.validator';
+import { CodeResendRule } from './validators/resend-code.validator';
 
 @Global()
 @Module({
@@ -41,6 +42,8 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     JwtRefreshStrategy,
     BasicStrategy,
     JwtService,
+    EmailResendRule,
+    CodeResendRule,
   ],
   exports: [JwtService],
 })

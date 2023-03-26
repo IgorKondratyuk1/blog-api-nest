@@ -121,8 +121,8 @@ export class AuthService {
     if (!user.canBeConfirmed(code)) return false;
 
     await user.confirm(code);
-    await this.usersRepository.save(user);
-    return true;
+    const result: boolean = await this.usersRepository.save(user);
+    return result;
   }
 
   async resendConfirmCode(

@@ -109,7 +109,7 @@ export class AuthController {
     if (result) {
       return;
     } else {
-      throw new BadRequestException('user can not be confirmed'); // TODO check 400 code with ExceptionFilter
+      throw new BadRequestException('confirmation code is not found or user is already confirmed');
     }
   }
 
