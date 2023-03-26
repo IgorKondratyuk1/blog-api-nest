@@ -8,9 +8,6 @@ import {
   Query,
   HttpCode,
   NotFoundException,
-  ValidationPipe,
-  UsePipes,
-  HttpException,
   UseGuards,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -19,7 +16,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UsersQueryRepository } from './users.query-repository';
 import { QueryUserDto } from './dto/query-user.dto';
 import ViewUserDto from './dto/view-user.dto';
-import { CustomErrorDto } from '../../common/dto/error';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 
 @Controller('users')
