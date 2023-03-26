@@ -60,8 +60,8 @@ export class UsersQueryRepository {
 
     return new PaginationDto<ViewUserDto>(
       pagesCount,
-      queryObj.pageNumber,
-      queryObj.pageSize,
+      Number(queryObj.pageNumber),
+      Number(queryObj.pageSize),
       totalCount,
       usersViewModels,
     );
