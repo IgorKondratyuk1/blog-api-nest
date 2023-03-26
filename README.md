@@ -48,10 +48,10 @@ $ yarn run start:prod
 ## Test
 
 ```bash
-# unit tests
+# unit delete-all
 $ yarn run test
 
-# e2e tests
+# e2e delete-all
 $ yarn run test:e2e
 
 # test coverage

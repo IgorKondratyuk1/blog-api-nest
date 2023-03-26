@@ -20,5 +20,4 @@ export class PasswordRecovery {
   isUsed: boolean;
 }
 
-export const PasswordRecoverySchema =
-  SchemaFactory.createForClass(PasswordRecovery);
+export const PasswordRecoverySchema = SchemaFactory.createForClass(PasswordRecovery);

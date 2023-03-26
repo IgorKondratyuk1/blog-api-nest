@@ -12,5 +12,4 @@ export class EmailConfirmation {
   isConfirmed: boolean;
 }
 
-export const EmailConfirmationSchema =
-  SchemaFactory.createForClass(EmailConfirmation);
+export const EmailConfirmationSchema = SchemaFactory.createForClass(EmailConfirmation);
