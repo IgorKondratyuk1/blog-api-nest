@@ -1,5 +1,5 @@
-// import { FilterType, QueryType } from '../../common/types/pagination';
-// import { QueryUserModel, UserFilterType } from '../types/user';
+// import { FilterType, QueryType } from '../../common/dto/pagination';
+// import { QueryUserModel, UserFilterType } from '../dto/user';
 //
 // export class UsersPagination {
 //   public static getFilters(query: QueryType) {

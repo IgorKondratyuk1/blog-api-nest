@@ -1,0 +1,9 @@
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+
+export class UpdateCommentDto {
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(20)
+  @MaxLength(300)
+  content: string;
+}

@@ -1,0 +1,228 @@
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CustomErrorDto } from '../../common/dto/error';
+import { UsersRepository } from '../users/users.repository';
+import { UserDocument } from '../users/schemas/user.schema';
+import { EmailManagerService } from '../email/email-manager.service';
+import { SecurityDevicesRepository } from '../security-devices/security-devices.repository';
+import { UsersService } from '../users/users.service';
+import { SecurityDevicesService } from '../security-devices/security-devices.service';
+import { CreateSecurityDeviceDto } from '../security-devices/dto/create-security-device.dto';
+import { SecurityDevice, SecurityDeviceDocument } from '../security-devices/schemas/device.schema';
+import { ExtendedLoginDataDto } from './dto/extended-login-data-dto';
+import { JwtService } from '@nestjs/jwt';
+import { AuthTokensDto } from './dto/auth-tokens.dto';
+import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
+import { RegistrationEmailResendDto } from './dto/registration-email-resend.dto';
+import { randomUUID } from 'crypto';
+import { PasswordRecoveryDto } from './dto/password-recovery.dto';
+import { AuthTokenPayloadDto } from './dto/auth-token-payload.dto';
+import { SecurityConfigService } from '../../config/config-services/security-config.service';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private usersService: UsersService,
+    private usersRepository: UsersRepository,
+    private securityDevicesRepository: SecurityDevicesRepository,
+    private securityDevicesService: SecurityDevicesService,
+    private emailManagerService: EmailManagerService,
+    private jwtService: JwtService,
+    private securityConfigService: SecurityConfigService,
+  ) {}
+
+  async validateUser(loginOrEmail: string, password: string): Promise<UserDocument | null> {
+    // 1. Get user
+    const user: UserDocument | null = await this.usersRepository.findUserByLoginOrEmail(
+      loginOrEmail,
+    );
+    if (!user) return null;
+
+    const isPasswordCorrect: boolean = await user.isPasswordCorrect(password);
+    if (!isPasswordCorrect) return null;
+
+    return user;
+  }
+
+  // TODO not return CustomErrorDto, only throw it. And catch like global Error in Global Filter.
+  async register(createUserDto: CreateUserDto): Promise<UserDocument | CustomErrorDto> {
+    // 1. Create new user
+    const createdUser: UserDocument | null = await this.usersRepository.create(createUserDto);
+    if (!createdUser) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
+
+    try {
+      // 2. Try to send password confirmation email
+      await this.emailManagerService.sendEmailConfirmationMessage(createdUser);
+    } catch (error) {
+      // 2.1. If Error occurred, then delete user
+      console.error(error);
+      await this.usersRepository.remove(createdUser.id);
+      return new CustomErrorDto(
+        HttpStatus.SERVICE_UNAVAILABLE,
+        'error occurred while try to send email',
+      );
+    }
+
+    return createdUser;
+  }
+
+  async login(
+    extendedLoginDataDto: ExtendedLoginDataDto,
+    userId: string,
+  ): Promise<AuthTokensDto | CustomErrorDto> {
+    if (!userId)
+      return new CustomErrorDto(
+        HttpStatus.BAD_REQUEST,
+        'error in login step, user not transferred',
+      );
+
+    const createSecurityDeviceDto: CreateSecurityDeviceDto = new CreateSecurityDeviceDto(
+      userId,
+      extendedLoginDataDto.ip,
+      extendedLoginDataDto.title,
+    );
+
+    // 3. Create device session
+    const createdSession: SecurityDevice | null =
+      await this.securityDevicesService.createDeviceSession(createSecurityDeviceDto);
+
+    if (!createdSession) {
+      return new CustomErrorDto(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'can not create new device session',
+      );
+    }
+
+    const tokensPayload = {
+      userId: createdSession.userId,
+      deviceId: createdSession.deviceId,
+      lastActiveDate: createdSession.lastActiveDate,
+    };
+
+    return new AuthTokensDto(
+      this.jwtService.sign(tokensPayload, {
+        secret: this.securityConfigService.jwtSecret,
+        expiresIn: this.securityConfigService.accessTokenExpirationSeconds,
+      }),
+      this.jwtService.sign(tokensPayload, {
+        secret: this.securityConfigService.jwtSecret,
+        expiresIn: this.securityConfigService.refreshTokenExpirationSeconds,
+      }),
+    );
+  }
+
+  async confirmEmail(registrationConfirmationDto: RegistrationConfirmationDto): Promise<boolean> {
+    const code = registrationConfirmationDto.code;
+    const user: UserDocument | null = await this.usersRepository.findUserByEmailConfirmationCode(
+      code,
+    );
+
+    if (!user) return false;
+    if (!user.canBeConfirmed(code)) return false;
+
+    await user.confirm(code);
+    await this.usersRepository.save(user);
+    return true;
+  }
+
+  async resendConfirmCode(
+    registrationEmailResendDto: RegistrationEmailResendDto,
+  ): Promise<boolean> {
+    const email = registrationEmailResendDto.email;
+    const user: UserDocument | null = await this.usersRepository.findUserByLoginOrEmail(email);
+    if (!user) return false;
+    if (user.emailConfirmation.isConfirmed) return false;
+
+    await user.setEmailConfirmationCode(randomUUID());
+    await this.usersRepository.save(user);
+
+    try {
+      await this.emailManagerService.sendEmailConfirmationMessage(user);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  async generateNewTokensPair(
+    tokenPayloadDto: AuthTokenPayloadDto,
+  ): Promise<AuthTokensDto | CustomErrorDto> {
+    const { deviceId, userId, lastActiveDate } = tokenPayloadDto;
+    if (!deviceId || !userId || !lastActiveDate)
+      return new CustomErrorDto(HttpStatus.BAD_REQUEST, 'wrong token data');
+
+    // 1. Search user
+    const user: UserDocument | null = await this.usersRepository.findById(userId);
+    if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
+
+    // 2. Search user`s device session
+    const deviceSession: SecurityDeviceDocument | null =
+      await this.securityDevicesService.findDeviceSession(deviceId);
+
+    if (!deviceSession)
+      return new CustomErrorDto(HttpStatus.NOT_FOUND, 'device session is not found');
+
+    // TODO write test with old refresh token to check this case
+    // 3. Check version of refresh token by issued Date (issued Date like unique version of refresh token)
+    if (deviceSession.lastActiveDate.toISOString() !== lastActiveDate) {
+      return new CustomErrorDto(
+        HttpStatus.BAD_REQUEST,
+        'device session is reused, it is not unique',
+      );
+    }
+
+    // 4. Update refresh token issued Date
+    deviceSession.setLastActiveDate(new Date());
+    await this.securityDevicesRepository.save(deviceSession);
+
+    const tokensPayload = {
+      userId: deviceSession.userId,
+      deviceId: deviceSession.deviceId,
+      lastActiveDate: deviceSession.lastActiveDate,
+    };
+
+    return new AuthTokensDto(
+      this.jwtService.sign(tokensPayload, {
+        secret: this.securityConfigService.jwtSecret,
+        expiresIn: this.securityConfigService.accessTokenExpirationSeconds,
+      }),
+      this.jwtService.sign(tokensPayload, {
+        secret: this.securityConfigService.jwtSecret,
+        expiresIn: this.securityConfigService.refreshTokenExpirationSeconds,
+      }),
+    );
+  }
+
+  async sendRecoveryCode(passwordRecoveryDto: PasswordRecoveryDto): Promise<boolean> {
+    const email = passwordRecoveryDto.email;
+    const user: UserDocument | null = await this.usersRepository.findUserByLoginOrEmail(email);
+    if (!user) return false;
+
+    await user.createNewPasswordRecoveryCode();
+    await this.usersRepository.save(user);
+
+    try {
+      await this.emailManagerService.sendPasswordRecoveryMessage(user);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  async confirmNewPassword(newPassword: string, recoveryCode: string): Promise<boolean> {
+    const user: UserDocument | null = await this.usersRepository.findUserByPasswordConfirmationCode(
+      recoveryCode,
+    );
+    if (!user) return false;
+
+    await user.setPassword(newPassword);
+    await this.usersRepository.save(user);
+    return true;
+  }
+
+  async logout(userId: string, deviceId: string): Promise<boolean | CustomErrorDto> {
+    return await this.securityDevicesService.deleteDeviceSession(userId, deviceId);
+  }
+}

@@ -1,14 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { Account, AccountSchema } from './account.schema';
-import {
-  EmailConfirmation,
-  EmailConfirmationSchema,
-} from './email-confirmation.schema';
-import {
-  PasswordRecovery,
-  PasswordRecoverySchema,
-} from './password-recovery.schema';
+import { EmailConfirmation, EmailConfirmationSchema } from './email-confirmation.schema';
+import { PasswordRecovery, PasswordRecoverySchema } from './password-recovery.schema';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { add } from 'date-fns';
@@ -18,12 +12,7 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema()
 export class User {
-  constructor(
-    login: string,
-    email: string,
-    passwordHash: string,
-    isConfirmed = false,
-  ) {
+  constructor(login: string, email: string, passwordHash: string, isConfirmed = false) {
     this.id = randomUUID();
     this.accountData = {
       login,
@@ -67,8 +56,7 @@ export class User {
   }
 
   confirm(code: string) {
-    if (this.emailConfirmation.isConfirmed)
-      throw new Error('User is already confirmed');
+    if (this.emailConfirmation.isConfirmed) throw new Error('User is already confirmed');
     if (this.canBeConfirmed(code)) this.emailConfirmation.isConfirmed = true;
   }
 
@@ -78,33 +66,27 @@ export class User {
 
   setEmailConfirmationCode(code: string) {
     if (this.emailConfirmation.isConfirmed)
-      throw new Error(
-        'Can not set new confirmation code, if code was confirmed',
-      );
+      throw new Error('Can not set new confirmation code, if code was confirmed');
     this.emailConfirmation.confirmationCode = code;
   }
 
   async setPassword(newPassword: string) {
-    if (this.passwordRecovery && this.passwordRecovery.isUsed)
-      throw new Error(
-        'Password recovery object is not created or already used',
-      );
+    if (this.passwordRecovery && this.passwordRecovery.isUsed) {
+      throw new Error('Password recovery object is not created or already used');
+    }
+
     if (
       !this.passwordRecovery?.expirationDate ||
       new Date(this.passwordRecovery.expirationDate) < new Date()
-    )
+    ) {
       throw new Error('Password recovery date have expired or not created');
+    }
 
-    const newPasswordHash: string = await User.generatePasswordHash(
-      newPassword,
-    );
-    this.accountData.passwordHash = newPasswordHash;
+    this.accountData.passwordHash = await User.generatePasswordHash(newPassword);
   }
 
   async createNewPasswordRecoveryCode() {
-    const user = this as User;
-    const recoveryData: PasswordRecovery = new PasswordRecovery();
-    user.passwordRecovery = recoveryData;
+    this.passwordRecovery = new PasswordRecovery();
   }
 
   public static async generatePasswordHash(password: string) {
@@ -112,19 +94,9 @@ export class User {
     return await bcrypt.hash(password, passwordSalt);
   }
 
-  public static async createInstance(
-    createUserDto: CreateUserDto,
-    isConfirmed = false,
-  ) {
-    const passwordHash: string = await User.generatePasswordHash(
-      createUserDto.password,
-    );
-    return new User(
-      createUserDto.login,
-      createUserDto.email,
-      passwordHash,
-      isConfirmed,
-    );
+  public static async createInstance(createUserDto: CreateUserDto, isConfirmed = false) {
+    const passwordHash: string = await User.generatePasswordHash(createUserDto.password);
+    return new User(createUserDto.login, createUserDto.email, passwordHash, isConfirmed);
   }
 }
 

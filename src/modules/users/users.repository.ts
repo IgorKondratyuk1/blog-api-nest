@@ -9,45 +9,85 @@ import { UsersMapper } from './utils/users.mapper';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async save(user: UserDocument): Promise<any> {
-    return await user.save();
+  async save(user: UserDocument): Promise<boolean> {
+    try {
+      await user.save();
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 
-  async create(createUserDto: CreateUserDto, isConfirmed: boolean) {
-    const newUser = await User.createInstance(createUserDto, isConfirmed);
-
-    await this.userModel.create(newUser);
-    return UsersMapper.toView(newUser);
+  async create(createUserDto: CreateUserDto, isConfirmed = false): Promise<UserDocument | null> {
+    try {
+      const newUser: User = await User.createInstance(createUserDto, isConfirmed);
+      return await this.userModel.create(newUser);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 
-  async findOne(id: string) {
-    return this.userModel.findOne({ id }).exec();
+  async findById(id: string): Promise<UserDocument | null> {
+    try {
+      return this.userModel.findOne({ id }).exec(); // TODO Question: need to use exec() ?
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 
-  async findUserByLoginOrEmail(loginOrEmail: string) {
-    return this.userModel.findOne({
-      $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
-    });
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserDocument | null> {
+    try {
+      return this.userModel.findOne({
+        $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
+      });
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 
-  async findUserByEmailConfirmationCode(code: string) {
-    return this.userModel.findOne({
-      'emailConfirmation.confirmationCode': code,
-    });
+  async findUserByEmailConfirmationCode(code: string): Promise<UserDocument | null> {
+    try {
+      return this.userModel.findOne({
+        'emailConfirmation.confirmationCode': code,
+      });
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 
-  async findUserByPasswordConfirmationCode(code: string) {
-    return this.userModel.findOne({
-      'passwordRecovery.recoveryCode': code,
-    });
+  async findUserByPasswordConfirmationCode(code: string): Promise<UserDocument | null> {
+    try {
+      return this.userModel.findOne({
+        'passwordRecovery.recoveryCode': code,
+      });
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 
-  async remove(id: string) {
-    const result = await this.userModel.deleteOne({ id });
-    return result.deletedCount === 1;
+  async remove(id: string): Promise<boolean> {
+    try {
+      const result = await this.userModel.deleteOne({ id });
+      return result.deletedCount === 1;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 
-  async removeAll() {
-    return this.userModel.deleteMany({});
+  async removeAll(): Promise<boolean> {
+    try {
+      await this.userModel.deleteMany({});
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 }
