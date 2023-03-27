@@ -48,7 +48,7 @@ export class SecurityDevicesService {
     }
 
     if (currentUserId !== deviceSession.userId) {
-      return new CustomErrorDto(HttpStatus.BAD_REQUEST, 'wrong userId in device session');
+      return new CustomErrorDto(HttpStatus.FORBIDDEN, 'can not delete session of other user');
     }
 
     const deleteSession = await this.securityDevicesRepository.deleteDeviceSession(deviceId);

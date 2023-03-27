@@ -128,6 +128,7 @@ export class AuthController {
 
   @SkipThrottle()
   @UseGuards(JwtRefreshAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('/refresh-token')
   async refreshToken(
     @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto,
