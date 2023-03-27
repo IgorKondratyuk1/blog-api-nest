@@ -5,7 +5,9 @@ import { CreateSecurityDeviceDto } from './dto/create-security-device.dto';
 import { CustomErrorDto } from '../../common/dto/error';
 import { SecurityDeviceMapper } from './utils/security-device.mapper';
 import { ViewSecurityDeviceDto } from './dto/view-security-device.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Injectable()
 export class SecurityDevicesService {
   constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
@@ -25,7 +27,7 @@ export class SecurityDevicesService {
     return device;
   }
 
-  async getAllDevices(userId: string): Promise<ViewSecurityDeviceDto[] | null> {
+  async getAllDeviceSessions(userId: string): Promise<ViewSecurityDeviceDto[] | null> {
     const result: SecurityDeviceDocument[] | null =
       await this.securityDevicesRepository.findDeviceSessionsByUser(userId);
     return result.map(SecurityDeviceMapper.toView);

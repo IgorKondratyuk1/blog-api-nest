@@ -10,7 +10,10 @@ import { AppConfigModule } from './config/app-config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SecurityDevicesModule } from './modules/security-devices/security-devices.module';
 import { EmailModule } from './modules/email/email.module';
-import { UsersActionsModule } from './modules/users-actions/users-actions.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { SecurityDevicesController } from './modules/security-devices/security-devices.controller';
+import { APP_GUARD } from '@nestjs/core';
+import { SecurityConfigService } from './config/config-services/security-config.service';
 
 @Module({
   imports: [
@@ -18,6 +21,14 @@ import { UsersActionsModule } from './modules/users-actions/users-actions.module
       envFilePath: ['.env', '.env.local'],
       load: [getConfiguration],
       isGlobal: true,
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [AppConfigModule],
+      inject: [SecurityConfigService],
+      useFactory: (securityConfigService: SecurityConfigService) => ({
+        ttl: securityConfigService.requestsTTL,
+        limit: securityConfigService.requestsLimit,
+      }),
     }),
     MongooseModule.forRootAsync({
       imports: [AppConfigModule],
@@ -34,7 +45,13 @@ import { UsersActionsModule } from './modules/users-actions/users-actions.module
     AuthModule,
     SecurityDevicesModule,
     EmailModule,
-    UsersActionsModule,
+  ],
+  controllers: [SecurityDevicesController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

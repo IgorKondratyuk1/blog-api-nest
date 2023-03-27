@@ -38,6 +38,7 @@ import { HeaderUserAgent } from './decorators/header-user-agent.param.decorator'
 import { CurrentUserId } from './decorators/current-user-id.param.decorator';
 import { CurrentTokenPayload } from './decorators/current-token-payload.param.decorator';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -49,6 +50,7 @@ export class AuthController {
     private securityConfigService: SecurityConfigService,
   ) {}
 
+  @SkipThrottle()
   @UseGuards(JwtAccessStrictAuthGuard)
   @Get('/me')
   async me(@CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
@@ -124,6 +126,7 @@ export class AuthController {
     }
   }
 
+  @SkipThrottle()
   @UseGuards(JwtRefreshAuthGuard)
   @Post('/refresh-token')
   async refreshToken(
@@ -167,6 +170,7 @@ export class AuthController {
     return;
   }
 
+  @SkipThrottle()
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/logout')

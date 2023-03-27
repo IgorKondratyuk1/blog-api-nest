@@ -34,7 +34,9 @@ import { JwtAccessSoftAuthGuard } from '../../../auth/guards/jwt-access-soft-aut
 import { CurrentUserId } from '../../../auth/decorators/current-user-id.param.decorator';
 import { ViewPostDto } from './dto/view-post.dto';
 import { PostDocument } from './schemas/post.schema';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('posts')
 export class PostsController {
   constructor(

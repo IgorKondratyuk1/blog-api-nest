@@ -18,7 +18,8 @@ export const getConfiguration = () => ({
     ACCESS_TOKEN_EXPIRATION_SEC: process.env.ACCESS_TOKEN_EXPIRATION_SEC, // seconds
     REFRESH_TOKEN_EXPIRATION_SEC: process.env.REFRESH_TOKEN_EXPIRATION_SEC, // seconds
     EXPIRED_DEVICE_SESSION_DAYS: process.env.EXPIRED_DEVICE_SESSION_DAYS, // days
-    DEBOUNCE_TIME_MS: process.env.DEBOUNCE_TIME_MS, // ms
+    REQUESTS_TTL_SEC: process.env.REQUESTS_TTL_SEC,
+    REQUESTS_LIMIT: process.env.REQUESTS_LIMIT,
     HTTP_BASIC_USER: process.env.HTTP_BASIC_USER,
     HTTP_BASIC_PASSWORD: process.env.HTTP_BASIC_PASSWORD,
   },

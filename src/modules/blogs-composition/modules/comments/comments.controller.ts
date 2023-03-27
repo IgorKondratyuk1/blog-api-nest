@@ -21,7 +21,9 @@ import { UpdateLikeDto } from '../likes/dto/update-like.dto';
 import { CustomErrorDto } from '../../../../common/dto/error';
 import { JwtAccessSoftAuthGuard } from '../../../auth/guards/jwt-access-soft-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user-id.param.decorator';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('comments')
 export class CommentsController {
   constructor(

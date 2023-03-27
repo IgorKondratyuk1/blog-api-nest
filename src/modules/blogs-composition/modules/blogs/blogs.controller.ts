@@ -15,7 +15,6 @@ import {
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { BlogsQueryRepository } from './blogs.query-repository';
-import { CreatePostDto } from '../posts/dto/create-post.dto';
 import { PostsService } from '../posts/posts.service';
 import { PostsQueryRepository } from '../posts/posts.query-repository';
 import { QueryDto } from '../../../../common/dto/query.dto';
@@ -24,12 +23,12 @@ import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 import { JwtAccessSoftAuthGuard } from '../../../auth/guards/jwt-access-soft-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user-id.param.decorator';
 import { CustomErrorDto } from '../../../../common/dto/error';
-import { PostDocument } from '../posts/schemas/post.schema';
 import { ViewPostDto } from '../posts/dto/view-post.dto';
 import { ViewBlogDto } from './dto/view-blog.dto';
-import { CreatePostOfBlogModel } from '../../../../../test/models/post/createPostOfBlog';
 import { CreatePostOfBlogDto } from '../posts/dto/create-post-of-blog.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('blogs')
 export class BlogsController {
   constructor(

@@ -33,11 +33,18 @@ export class SecurityConfigService {
     return expiredDeviceSession ? Number(expiredDeviceSession) : 5;
   }
 
-  get debounceTimeMs(): number {
-    const debounceTime: string = this.configService.get('SECURITY', {
+  get requestsTTL(): number {
+    const requestsTTL: string = this.configService.get('SECURITY', {
       infer: true,
-    }).DEBOUNCE_TIME_MS;
-    return debounceTime ? Number(debounceTime) : 10000;
+    }).REQUESTS_TTL_SEC;
+    return requestsTTL ? Number(requestsTTL) : 10;
+  }
+
+  get requestsLimit(): number {
+    const requestsLimit: string = this.configService.get('SECURITY', {
+      infer: true,
+    }).REQUESTS_LIMIT;
+    return requestsLimit ? Number(requestsLimit) : 5;
   }
 
   get basicUsername(): string {
