@@ -33,16 +33,7 @@ export class UsersQueryRepository {
       .lean();
 
     const usersViewModels: ViewUserDto[] = foundedUsers.map(UsersMapper.toView);
-    const totalCount: number = await this.userModel.countDocuments({
-      $or: [
-        {
-          'accountData.login': { $regex: queryObj.searchLoginTerm, $options: 'i' },
-        },
-        {
-          'accountData.email': { $regex: queryObj.searchEmailTerm, $options: 'i' },
-        },
-      ],
-    });
+    const totalCount: number = await this.userModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewUserDto>(
@@ -61,16 +52,10 @@ export class UsersQueryRepository {
       ...(banStatus !== null && { 'banInfo.isBanned': banStatus }),
       $or: [
         {
-          'accountData.login': {
-            $regex: queryObj.searchLoginTerm,
-            $options: 'i',
-          },
+          'accountData.login': { $regex: queryObj.searchLoginTerm, $options: 'i' },
         },
         {
-          'accountData.email': {
-            $regex: queryObj.searchEmailTerm,
-            $options: 'i',
-          },
+          'accountData.email': { $regex: queryObj.searchEmailTerm, $options: 'i' },
         },
       ],
     };
