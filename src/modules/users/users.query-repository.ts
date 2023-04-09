@@ -7,6 +7,7 @@ import { UsersMapper } from './utils/users.mapper';
 import { QueryUserDto } from './dto/query-user.dto';
 import { Paginator } from '../../common/utils/paginator';
 import { PaginationDto } from '../../common/dto/pagination';
+import { UsersPaginator } from './utils/users.pagination';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -22,24 +23,10 @@ export class UsersQueryRepository {
   async findAll(queryObj: QueryUserDto): Promise<PaginationDto<ViewUserDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const filters = this.getFilters(queryObj);
 
     const foundedUsers: User[] = await this.userModel
-      .find({
-        $or: [
-          {
-            'accountData.login': {
-              $regex: queryObj.searchLoginTerm,
-              $options: 'i',
-            },
-          },
-          {
-            'accountData.email': {
-              $regex: queryObj.searchEmailTerm,
-              $options: 'i',
-            },
-          },
-        ],
-      })
+      .find(filters)
       .sort({ [`accountData.${queryObj.sortBy}`]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
@@ -66,4 +53,26 @@ export class UsersQueryRepository {
       usersViewModels,
     );
   }
+
+  private getFilters = (queryObj: QueryUserDto) => {
+    const banStatus: boolean | null = UsersPaginator.getBanStatus(queryObj.banStatus);
+
+    return {
+      ...(banStatus !== null && { 'banInfo.isBanned': banStatus }),
+      $or: [
+        {
+          'accountData.login': {
+            $regex: queryObj.searchLoginTerm,
+            $options: 'i',
+          },
+        },
+        {
+          'accountData.email': {
+            $regex: queryObj.searchEmailTerm,
+            $options: 'i',
+          },
+        },
+      ],
+    };
+  };
 }

@@ -80,7 +80,7 @@ export class BlogsController {
   @UseGuards(JwtAccessSoftAuthGuard)
   @Get(':id/posts')
   async findAllPostsOfBlog(@Param('id') id: string, @Query() query: QueryDto, @CurrentUserId() userId: string) {
-    const blog = await this.blogsService.findOne(id);
+    const blog = await this.blogsService.findById(id);
     if (!blog) throw new NotFoundException('blog is not found');
 
     return await this.postsQueryRepository.findPostsOfBlog(id, query, userId);

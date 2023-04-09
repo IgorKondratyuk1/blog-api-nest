@@ -63,7 +63,8 @@ export class BloggerController {
   @Delete(':id')
   @HttpCode(204)
   async removeBlog(@Param('id') id: string, @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
-    const result = await this.blogsService.remove(tokenPayload.userId, id);
+    const result: boolean | CustomErrorDto = await this.blogsService.remove(tokenPayload.userId, id);
+    if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
     if (!result) throw new NotFoundException('blog is not found');
     return;
   }

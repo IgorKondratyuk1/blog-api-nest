@@ -56,7 +56,7 @@ export class SuperAdminUsersController {
   @UseGuards(BasicAuthGuard)
   @Delete(':userId')
   @HttpCode(204)
-  async remove(@Param('id') userId: string) {
+  async remove(@Param('userId') userId: string) {
     const result: boolean = await this.usersService.remove(userId);
     if (!result) throw new NotFoundException('user not found');
     return;

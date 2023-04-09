@@ -74,7 +74,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const extendedLoginData = new ExtendedLoginDataDto(loginDto.loginOrEmail, loginDto.password, ip, title);
-
     const loginResult: AuthTokensDto | CustomErrorDto = await this.authService.login(extendedLoginData, userId);
 
     if (loginResult instanceof CustomErrorDto) throw new HttpException(loginResult.message, loginResult.code);

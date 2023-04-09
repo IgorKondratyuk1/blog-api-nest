@@ -16,7 +16,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     console.log({ loginOrEmail, password });
 
     const user: UserDocument | null = await this.authService.validateUser(loginOrEmail, password);
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException('user not valid');
+    if (user.banInfo.isBanned) throw new UnauthorizedException('user is banned');
 
     return new AuthUserPayloadDto(user.id);
   }

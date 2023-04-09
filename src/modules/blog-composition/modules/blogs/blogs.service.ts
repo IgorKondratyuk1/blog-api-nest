@@ -12,7 +12,7 @@ import { UsersService } from '../../../users/users.service';
 export class BlogsService {
   constructor(private blogsRepository: BlogsRepository) {}
 
-  async findOne(id: string) {
+  async findById(id: string) {
     return await this.blogsRepository.findOne(id);
   }
 
@@ -39,14 +39,14 @@ export class BlogsService {
   }
 
   async remove(userId: string, blogId: string): Promise<boolean | CustomErrorDto> {
-    const blog = await this.findOne(blogId);
+    const blog: BlogDocument | null = await this.findById(blogId);
 
     if (!blog) {
       return new CustomErrorDto(HttpStatus.NOT_FOUND, 'blog is not found');
     }
 
     if (blog.userId !== userId) {
-      return new CustomErrorDto(HttpStatus.FORBIDDEN, 'can not update not own blog');
+      return new CustomErrorDto(HttpStatus.FORBIDDEN, 'can not delete not own blog');
     }
 
     return await this.blogsRepository.remove(blogId);

@@ -33,9 +33,7 @@ export class AuthService {
 
   async validateUser(loginOrEmail: string, password: string): Promise<UserDocument | null> {
     // 1. Get user
-    const user: UserDocument | null = await this.usersRepository.findUserByLoginOrEmail(
-      loginOrEmail,
-    );
+    const user: UserDocument | null = await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
     if (!user) return null;
 
     const isPasswordCorrect: boolean = await user.isPasswordCorrect(password);
@@ -65,15 +63,8 @@ export class AuthService {
   //   return createdUser;
   // }
 
-  async login(
-    extendedLoginDataDto: ExtendedLoginDataDto,
-    userId: string,
-  ): Promise<AuthTokensDto | CustomErrorDto> {
-    if (!userId)
-      return new CustomErrorDto(
-        HttpStatus.BAD_REQUEST,
-        'error in login step, user not transferred',
-      );
+  async login(extendedLoginDataDto: ExtendedLoginDataDto, userId: string): Promise<AuthTokensDto | CustomErrorDto> {
+    if (!userId) return new CustomErrorDto(HttpStatus.BAD_REQUEST, 'error in login step, user not transferred');
 
     const createSecurityDeviceDto: CreateSecurityDeviceDto = new CreateSecurityDeviceDto(
       userId,
@@ -82,14 +73,12 @@ export class AuthService {
     );
 
     // 3. Create device session
-    const createdSession: SecurityDevice | null =
-      await this.securityDevicesService.createDeviceSession(createSecurityDeviceDto);
+    const createdSession: SecurityDevice | null = await this.securityDevicesService.createDeviceSession(
+      createSecurityDeviceDto,
+    );
 
     if (!createdSession) {
-      return new CustomErrorDto(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'can not create new device session',
-      );
+      return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not create new device session');
     }
 
     const tokensPayload = {
@@ -112,9 +101,7 @@ export class AuthService {
 
   async confirmEmail(registrationConfirmationDto: RegistrationConfirmationDto): Promise<boolean> {
     const code = registrationConfirmationDto.code;
-    const user: UserDocument | null = await this.usersRepository.findUserByEmailConfirmationCode(
-      code,
-    );
+    const user: UserDocument | null = await this.usersRepository.findUserByEmailConfirmationCode(code);
 
     if (!user) return false;
     if (!user.canBeConfirmed(code)) return false;
@@ -124,9 +111,7 @@ export class AuthService {
     return result;
   }
 
-  async resendConfirmCode(
-    registrationEmailResendDto: RegistrationEmailResendDto,
-  ): Promise<boolean> {
+  async resendConfirmCode(registrationEmailResendDto: RegistrationEmailResendDto): Promise<boolean> {
     const email = registrationEmailResendDto.email;
     const user: UserDocument | null = await this.usersRepository.findUserByLoginOrEmail(email);
     if (!user) return false;
@@ -144,30 +129,22 @@ export class AuthService {
     }
   }
 
-  async generateNewTokensPair(
-    tokenPayloadDto: AuthTokenPayloadDto,
-  ): Promise<AuthTokensDto | CustomErrorDto> {
+  async generateNewTokensPair(tokenPayloadDto: AuthTokenPayloadDto): Promise<AuthTokensDto | CustomErrorDto> {
     const { deviceId, userId, lastActiveDate } = tokenPayloadDto;
-    if (!deviceId || !userId || !lastActiveDate)
-      return new CustomErrorDto(HttpStatus.BAD_REQUEST, 'wrong token data');
+    if (!deviceId || !userId || !lastActiveDate) return new CustomErrorDto(HttpStatus.BAD_REQUEST, 'wrong token data');
 
     // 1. Search user
     const user: UserDocument | null = await this.usersRepository.findById(userId);
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
 
     // 2. Search user`s device session
-    const deviceSession: SecurityDeviceDocument | null =
-      await this.securityDevicesService.findDeviceSession(deviceId);
+    const deviceSession: SecurityDeviceDocument | null = await this.securityDevicesService.findDeviceSession(deviceId);
 
-    if (!deviceSession)
-      return new CustomErrorDto(HttpStatus.NOT_FOUND, 'device session is not found');
+    if (!deviceSession) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'device session is not found');
 
     // 3. Check version of refresh token by issued Date (issued Date like unique version of refresh token)
     if (deviceSession.lastActiveDate.toISOString() !== lastActiveDate) {
-      return new CustomErrorDto(
-        HttpStatus.BAD_REQUEST,
-        'device session is reused, it is not unique',
-      );
+      return new CustomErrorDto(HttpStatus.BAD_REQUEST, 'device session is reused, it is not unique');
     }
 
     // 4. Update refresh token issued Date
@@ -210,9 +187,7 @@ export class AuthService {
   }
 
   async confirmNewPassword(newPassword: string, recoveryCode: string): Promise<boolean> {
-    const user: UserDocument | null = await this.usersRepository.findUserByPasswordConfirmationCode(
-      recoveryCode,
-    );
+    const user: UserDocument | null = await this.usersRepository.findUserByPasswordConfirmationCode(recoveryCode);
     if (!user) return false;
 
     await user.setPassword(newPassword);
