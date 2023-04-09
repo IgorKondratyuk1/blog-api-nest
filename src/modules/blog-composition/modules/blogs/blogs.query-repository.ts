@@ -7,7 +7,6 @@ import { Paginator } from '../../../../common/utils/paginator';
 import { QueryDto } from '../../../../common/dto/query.dto';
 import { ViewBlogDto } from './dto/view-blog.dto';
 import { PaginationDto } from '../../../../common/dto/pagination';
-import { UsersService } from '../../../users/users.service';
 import { ViewExtendedBlogDto } from './dto/view-extended-blog.dto';
 import { UsersRepository } from '../../../users/users.repository';
 
@@ -28,20 +27,19 @@ export class BlogsQueryRepository {
   async findBlogs(queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const filters = {
+      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
+    };
 
     const foundedBlogs: Blog[] = await this.blogModel
-      .find({
-        name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-      })
+      .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
       .lean();
 
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
-    const totalCount: number = await this.blogModel.countDocuments({
-      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-    });
+    const totalCount: number = await this.blogModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewBlogDto>(
@@ -56,11 +54,12 @@ export class BlogsQueryRepository {
   async findExtendedBlogs(queryObj: QueryDto): Promise<PaginationDto<ViewExtendedBlogDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const filters = {
+      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
+    };
 
     const foundedBlogs: Blog[] = await this.blogModel
-      .find({
-        name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-      })
+      .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
@@ -73,9 +72,7 @@ export class BlogsQueryRepository {
       }),
     );
 
-    const totalCount: number = await this.blogModel.countDocuments({
-      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-    });
+    const totalCount: number = await this.blogModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewExtendedBlogDto>(
@@ -91,20 +88,20 @@ export class BlogsQueryRepository {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
 
+    const filters = {
+      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
+      userId,
+    };
+
     const foundedBlogs: Blog[] = await this.blogModel
-      .find({
-        name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-        userId,
-      })
+      .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
       .lean();
 
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
-    const totalCount: number = await this.blogModel.countDocuments({
-      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-    });
+    const totalCount: number = await this.blogModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewBlogDto>(

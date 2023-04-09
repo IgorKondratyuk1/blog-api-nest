@@ -43,9 +43,10 @@ export class PostsQueryRepository {
   async findAll(queryObj: QueryDto, currentUserId: string = null): Promise<PaginationDto<ViewPostDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const filters = { isBanned: false };
 
     const foundedPosts: Post[] = await this.postModel
-      .find({ isBanned: false })
+      .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
@@ -56,7 +57,7 @@ export class PostsQueryRepository {
         return this.findById(post.id, currentUserId);
       }),
     );
-    const totalCount: number = await this.postModel.countDocuments();
+    const totalCount: number = await this.postModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewPostDto>(
@@ -75,9 +76,10 @@ export class PostsQueryRepository {
   ): Promise<PaginationDto<ViewPostDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const filters = { blogId: blogId, isBanned: false }; // TODO make method for filters (in other classes also)
 
     const foundedPosts: Post[] = await this.postModel
-      .find({ blogId: blogId, isBanned: false })
+      .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
@@ -89,9 +91,7 @@ export class PostsQueryRepository {
       }),
     );
 
-    const totalCount: number = await this.postModel.countDocuments({
-      blogId: blogId,
-    });
+    const totalCount: number = await this.postModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewPostDto>(
@@ -110,9 +110,10 @@ export class PostsQueryRepository {
   ): Promise<PaginationDto<ViewPostDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const filters = { blogId, userId, isBanned: false };
 
     const foundedPosts: Post[] = await this.postModel
-      .find({ blogId, userId, isBanned: false })
+      .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
@@ -124,9 +125,7 @@ export class PostsQueryRepository {
       }),
     );
 
-    const totalCount: number = await this.postModel.countDocuments({
-      blogId: blogId,
-    });
+    const totalCount: number = await this.postModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewPostDto>(

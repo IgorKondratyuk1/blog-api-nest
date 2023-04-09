@@ -45,9 +45,10 @@ export class CommentsQueryRepository {
   ): Promise<PaginationDto<ViewCommentDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const filters = { postId, isBanned: false };
 
     const foundedComments: Comment[] = await this.commentModel
-      .find({ postId, isBanned: false })
+      .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
@@ -74,7 +75,7 @@ export class CommentsQueryRepository {
       }),
     );
 
-    const totalCount: number = await this.commentModel.countDocuments({ postId });
+    const totalCount: number = await this.commentModel.countDocuments(filters);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewCommentDto>(
