@@ -5,6 +5,8 @@ export class GlobalValidationPipe extends ValidationPipe {
     super({
       stopAtFirstError: true,
       transform: true,
+      transformOptions: { enableImplicitConversion: true },
+      forbidNonWhitelisted: true,
       exceptionFactory: (errors) => {
         const errorsForResponse = [];
 

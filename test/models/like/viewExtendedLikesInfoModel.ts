@@ -1,4 +1,4 @@
-import { LikeStatusType } from '../../../src/modules/blogs-composition/modules/likes/types/like';
+import { LikeStatusType } from '../../../src/modules/blog-composition/modules/likes/types/like';
 import { ViewLikeDetailsModel } from './viewLikeDetailsModel';
 
 export type ViewExtendedLikesInfoModel = {

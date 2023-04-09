@@ -62,7 +62,20 @@ export class SecurityDevicesRepository {
         deviceId: { $ne: currentDeviceId },
       });
 
-      return result.deletedCount > 0;
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  }
+
+  async deleteAllUserSessions(userId: string): Promise<boolean> {
+    try {
+      const result = await this.securityDevicesModel.deleteMany({
+        userId,
+      });
+
+      return true;
     } catch (e) {
       console.log(e);
       return false;
@@ -79,11 +92,13 @@ export class SecurityDevicesRepository {
     }
   }
 
-  async deleteAllSessions() {
+  async deleteAllSessions(): Promise<boolean> {
     try {
-      return await this.securityDevicesModel.deleteMany({});
+      await this.securityDevicesModel.deleteMany({});
+      return true;
     } catch (e) {
       console.log(e);
+      return false;
     }
   }
 }

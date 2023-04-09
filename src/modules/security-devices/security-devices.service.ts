@@ -12,9 +12,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 export class SecurityDevicesService {
   constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
 
-  async createDeviceSession(
-    createSecurityDeviceDto: CreateSecurityDeviceDto,
-  ): Promise<SecurityDevice> {
+  async createDeviceSession(createSecurityDeviceDto: CreateSecurityDeviceDto): Promise<SecurityDevice> {
     const newDeviceSession: SecurityDevice | null = await this.securityDevicesRepository.create(
       createSecurityDeviceDto,
     );
@@ -22,14 +20,14 @@ export class SecurityDevicesService {
   }
 
   async findDeviceSession(deviceId: string): Promise<SecurityDeviceDocument | null> {
-    const device: SecurityDeviceDocument | null =
-      await this.securityDevicesRepository.findDeviceSession(deviceId);
+    const device: SecurityDeviceDocument | null = await this.securityDevicesRepository.findDeviceSession(deviceId);
     return device;
   }
 
   async getAllDeviceSessions(userId: string): Promise<ViewSecurityDeviceDto[] | null> {
-    const result: SecurityDeviceDocument[] | null =
-      await this.securityDevicesRepository.findDeviceSessionsByUser(userId);
+    const result: SecurityDeviceDocument[] | null = await this.securityDevicesRepository.findDeviceSessionsByUser(
+      userId,
+    );
     return result.map(SecurityDeviceMapper.toView);
   }
 
@@ -37,10 +35,11 @@ export class SecurityDevicesService {
     return await this.securityDevicesRepository.deleteOtherSessions(userId, currentSessionId);
   }
 
-  async deleteDeviceSession(
-    currentUserId: string,
-    deviceId: string,
-  ): Promise<boolean | CustomErrorDto> {
+  async deleteAllUserSessions(userId: string): Promise<boolean> {
+    return await this.securityDevicesRepository.deleteAllUserSessions(userId);
+  }
+
+  async deleteDeviceSession(currentUserId: string, deviceId: string): Promise<boolean | CustomErrorDto> {
     const deviceSession = await this.securityDevicesRepository.findDeviceSession(deviceId);
 
     if (!deviceSession) {

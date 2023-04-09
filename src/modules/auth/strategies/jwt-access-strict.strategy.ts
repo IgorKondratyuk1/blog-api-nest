@@ -32,17 +32,11 @@ export class JwtAccessStrictStrategy extends PassportStrategy(Strategy, 'jwt-acc
 
     const user: UserDocument | null = await this.usersService.findById(payload.userId);
     if (!user) throw new UnauthorizedException('user not found');
+    if (user.banInfo.isBanned) throw new UnauthorizedException('user is banned');
 
-    const device: SecurityDeviceDocument | null =
-      await this.securityDevicesService.findDeviceSession(payload.deviceId);
-
+    const device: SecurityDeviceDocument | null = await this.securityDevicesService.findDeviceSession(payload.deviceId);
     if (!device) throw new UnauthorizedException('device not found');
 
-    return new AuthTokenPayloadDto(
-      payload.userId,
-      user.accountData.login,
-      payload.deviceId,
-      payload.lastActiveDate,
-    );
+    return new AuthTokenPayloadDto(payload.userId, user.accountData.login, payload.deviceId, payload.lastActiveDate);
   }
 }

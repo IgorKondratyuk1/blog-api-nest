@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { add } from 'date-fns';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { BanInfo, BanInfoSchema } from './ban-info.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -27,11 +28,19 @@ export class User {
       }).toISOString(),
       isConfirmed: isConfirmed,
     };
-    this.passwordRecovery = null; // TODO check recovery
+    this.banInfo = {
+      isBanned: false,
+      banDate: null,
+      banReason: null,
+    };
+    this.passwordRecovery = null;
   }
 
   @Prop({ type: String, required: true, default: randomUUID })
   id: string;
+
+  @Prop({ type: BanInfoSchema })
+  banInfo: BanInfo;
 
   @Prop({ type: AccountSchema })
   accountData: Account;
@@ -50,8 +59,7 @@ export class User {
 
   canBeConfirmed(code: string) {
     return (
-      this.emailConfirmation.confirmationCode === code &&
-      new Date(this.emailConfirmation.expirationDate) > new Date()
+      this.emailConfirmation.confirmationCode === code && new Date(this.emailConfirmation.expirationDate) > new Date()
     );
   }
 
@@ -60,14 +68,27 @@ export class User {
     if (this.canBeConfirmed(code)) this.emailConfirmation.isConfirmed = true;
   }
 
-  async isPasswordCorrect(password: string) {
-    return await bcrypt.compare(password, this.accountData.passwordHash);
+  setIsBanned(isBanned: boolean, banReason: string) {
+    if (!banReason) throw new Error('Can not ban user without "ban reason"');
+
+    if (isBanned) {
+      this.banInfo.banReason = banReason;
+      this.banInfo.banDate = new Date();
+    } else {
+      this.banInfo.banReason = null;
+      this.banInfo.banDate = null;
+    }
+
+    this.banInfo.isBanned = isBanned;
   }
 
   setEmailConfirmationCode(code: string) {
-    if (this.emailConfirmation.isConfirmed)
-      throw new Error('Can not set new confirmation code, if code was confirmed');
+    if (this.emailConfirmation.isConfirmed) throw new Error('Can not set new confirmation code, if code was confirmed');
     this.emailConfirmation.confirmationCode = code;
+  }
+
+  createNewPasswordRecoveryCode() {
+    this.passwordRecovery = new PasswordRecovery();
   }
 
   async setPassword(newPassword: string) {
@@ -75,18 +96,15 @@ export class User {
       throw new Error('Password recovery object is not created or already used');
     }
 
-    if (
-      !this.passwordRecovery?.expirationDate ||
-      new Date(this.passwordRecovery.expirationDate) < new Date()
-    ) {
+    if (!this.passwordRecovery?.expirationDate || new Date(this.passwordRecovery.expirationDate) < new Date()) {
       throw new Error('Password recovery date have expired or not created');
     }
 
     this.accountData.passwordHash = await User.generatePasswordHash(newPassword);
   }
 
-  async createNewPasswordRecoveryCode() {
-    this.passwordRecovery = new PasswordRecovery();
+  async isPasswordCorrect(password: string) {
+    return await bcrypt.compare(password, this.accountData.passwordHash);
   }
 
   public static async generatePasswordHash(password: string) {
@@ -109,6 +127,7 @@ UserSchema.methods = {
   setEmailConfirmationCode: User.prototype.setEmailConfirmationCode,
   setPassword: User.prototype.setPassword,
   createNewPasswordRecoveryCode: User.prototype.createNewPasswordRecoveryCode,
+  setIsBanned: User.prototype.setIsBanned,
 };
 
 UserSchema.statics = {

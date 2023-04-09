@@ -39,6 +39,9 @@ import { CurrentUserId } from './decorators/current-user-id.param.decorator';
 import { CurrentTokenPayload } from './decorators/current-token-payload.param.decorator';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { CookiesOptions } from './utils/CookiesOptions';
+import { CommandBus } from '@nestjs/cqrs';
+import { RegisterUserCommand } from './use-cases/register-user.use-case';
 
 @Controller('auth')
 export class AuthController {
@@ -48,6 +51,7 @@ export class AuthController {
     private usersRepository: UsersRepository,
     private appConfigService: AppConfigService,
     private securityConfigService: SecurityConfigService,
+    private commandBus: CommandBus,
   ) {}
 
   @SkipThrottle()
@@ -69,27 +73,21 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const extendedLoginData = new ExtendedLoginDataDto(
-      loginDto.loginOrEmail,
-      loginDto.password,
-      ip,
-      title,
+    const extendedLoginData = new ExtendedLoginDataDto(loginDto.loginOrEmail, loginDto.password, ip, title);
+
+    const loginResult: AuthTokensDto | CustomErrorDto = await this.authService.login(extendedLoginData, userId);
+
+    if (loginResult instanceof CustomErrorDto) throw new HttpException(loginResult.message, loginResult.code);
+
+    res.cookie(
+      'refreshToken',
+      loginResult.refreshToken,
+      CookiesOptions.createOptions(
+        true,
+        this.appConfigService.nodeEnv,
+        this.securityConfigService.refreshTokenExpirationSeconds,
+      ),
     );
-
-    const loginResult: AuthTokensDto | CustomErrorDto = await this.authService.login(
-      extendedLoginData,
-      userId,
-    );
-
-    if (loginResult instanceof CustomErrorDto)
-      throw new HttpException(loginResult.message, loginResult.code);
-
-    // TODO carry out cookies config and combine with refresh-token route
-    res.cookie('refreshToken', loginResult.refreshToken, {
-      httpOnly: true,
-      secure: this.appConfigService.nodeEnv !== 'development',
-      maxAge: this.securityConfigService.refreshTokenExpirationSeconds * 1000, //ms from now
-    });
 
     const viewAccessTokenDto: ViewAccessTokenDto = new ViewAccessTokenDto(loginResult.accessToken);
     return viewAccessTokenDto;
@@ -98,7 +96,7 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/registration')
   async registration(@Body() createUserDto: CreateUserDto) {
-    const result: UserDocument | CustomErrorDto = await this.authService.register(createUserDto);
+    const result: UserDocument | CustomErrorDto = await this.commandBus.execute(new RegisterUserCommand(createUserDto));
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
     return;
   }
@@ -134,17 +132,18 @@ export class AuthController {
     @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result: AuthTokensDto | CustomErrorDto = await this.authService.generateNewTokensPair(
-      tokenPayload,
-    );
+    const result: AuthTokensDto | CustomErrorDto = await this.authService.generateNewTokensPair(tokenPayload);
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
 
-    // TODO carry out cookies config
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: this.appConfigService.nodeEnv !== 'development',
-      maxAge: this.securityConfigService.refreshTokenExpirationSeconds * 1000 * 1000, // ms
-    });
+    res.cookie(
+      'refreshToken',
+      result.refreshToken,
+      CookiesOptions.createOptions(
+        true,
+        this.appConfigService.nodeEnv,
+        this.securityConfigService.refreshTokenExpirationSeconds,
+      ),
+    );
 
     const viewAccessTokenDto: ViewAccessTokenDto = new ViewAccessTokenDto(result.accessToken);
     return viewAccessTokenDto;
@@ -175,10 +174,7 @@ export class AuthController {
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/logout')
-  async logout(
-    @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async logout(@CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.logout(tokenPayload.userId, tokenPayload.deviceId); // Refresh token not valid
     res.clearCookie('refreshToken');
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);

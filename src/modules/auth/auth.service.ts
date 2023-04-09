@@ -44,27 +44,26 @@ export class AuthService {
     return user;
   }
 
-  // TODO not return CustomErrorDto, only throw it. And catch like global Error in Global Filter.
-  async register(createUserDto: CreateUserDto): Promise<UserDocument | CustomErrorDto> {
-    // 1. Create new user
-    const createdUser: UserDocument | null = await this.usersRepository.create(createUserDto);
-    if (!createdUser) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
-
-    try {
-      // 2. Try to send password confirmation email
-      await this.emailManagerService.sendEmailConfirmationMessage(createdUser);
-    } catch (error) {
-      // 2.1. If Error occurred, then delete user
-      console.error(error);
-      await this.usersRepository.remove(createdUser.id);
-      return new CustomErrorDto(
-        HttpStatus.SERVICE_UNAVAILABLE,
-        'error occurred while try to send email',
-      );
-    }
-
-    return createdUser;
-  }
+  // async register(createUserDto: CreateUserDto): Promise<UserDocument | CustomErrorDto> {
+  //   // 1. Create new user
+  //   const createdUser: UserDocument | null = await this.usersRepository.create(createUserDto);
+  //   if (!createdUser) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
+  //
+  //   try {
+  //     // 2. Try to send password confirmation email
+  //     await this.emailManagerService.sendEmailConfirmationMessage(createdUser);
+  //   } catch (error) {
+  //     // 2.1. If Error occurred, then delete user
+  //     console.error(error);
+  //     await this.usersRepository.remove(createdUser.id);
+  //     return new CustomErrorDto(
+  //       HttpStatus.SERVICE_UNAVAILABLE,
+  //       'error occurred while try to send email',
+  //     );
+  //   }
+  //
+  //   return createdUser;
+  // }
 
   async login(
     extendedLoginDataDto: ExtendedLoginDataDto,
@@ -163,7 +162,6 @@ export class AuthService {
     if (!deviceSession)
       return new CustomErrorDto(HttpStatus.NOT_FOUND, 'device session is not found');
 
-    // TODO write test with old refresh token to check this case
     // 3. Check version of refresh token by issued Date (issued Date like unique version of refresh token)
     if (deviceSession.lastActiveDate.toISOString() !== lastActiveDate) {
       return new CustomErrorDto(

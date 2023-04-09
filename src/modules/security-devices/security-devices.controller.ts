@@ -26,8 +26,9 @@ export class SecurityDevicesController {
   @UseGuards(JwtRefreshAuthGuard)
   @Get()
   async findAll(@CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
-    const result: ViewSecurityDeviceDto[] | null =
-      await this.securityDevicesService.getAllDeviceSessions(tokenPayload.userId);
+    const result: ViewSecurityDeviceDto[] | null = await this.securityDevicesService.getAllDeviceSessions(
+      tokenPayload.userId,
+    );
 
     if (!result) throw new NotFoundException('device sessions is not found');
     return result;
@@ -48,10 +49,7 @@ export class SecurityDevicesController {
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  async removeById(
-    @Param('id') id: string,
-    @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto,
-  ) {
+  async removeById(@Param('id') id: string, @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
     const result: boolean | CustomErrorDto = await this.securityDevicesService.deleteDeviceSession(
       tokenPayload.userId,
       id,

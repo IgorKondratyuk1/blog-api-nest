@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PostsRepository } from '../blogs-composition/modules/posts/posts.repository';
-import { BlogsRepository } from '../blogs-composition/modules/blogs/blogs.repository';
+import { PostsRepository } from '../blog-composition/modules/posts/posts.repository';
+import { BlogsRepository } from '../blog-composition/modules/blogs/blogs.repository';
 import { UsersRepository } from '../users/users.repository';
-import { CommentsRepository } from '../blogs-composition/modules/comments/comments.repository';
+import { CommentsRepository } from '../blog-composition/modules/comments/comments.repository';
 
 @Injectable()
 export class DeleteAllService {

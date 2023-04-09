@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { AppConfigService } from './config/config-services/app-config.service';
 import { BadRequestExceptionFilter } from './common/exception-filters/bad-request/bad-request.filter';

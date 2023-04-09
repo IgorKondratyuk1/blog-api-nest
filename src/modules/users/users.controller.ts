@@ -27,34 +27,34 @@ export class UsersController {
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
-  @UseGuards(BasicAuthGuard)
-  @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    const result: ViewUserDto | null = await this.usersService.create(createUserDto);
-    if (!result) throw new InternalServerErrorException('can not create user');
-    return result;
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Get()
-  findAll(@Query() query: QueryUserDto) {
-    return this.usersQueryRepository.findAll(query);
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const user: ViewUserDto | null = await this.usersQueryRepository.findOne(id);
-    if (!user) throw new NotFoundException('user not found');
-    return user;
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Delete(':id')
-  @HttpCode(204)
-  async remove(@Param('id') id: string) {
-    const result: boolean = await this.usersService.remove(id);
-    if (!result) throw new NotFoundException('User not found');
-    return;
-  }
+  // @UseGuards(BasicAuthGuard)
+  // @Post()
+  // async create(@Body() createUserDto: CreateUserDto) {
+  //   const result: ViewUserDto | null = await this.usersService.create(createUserDto);
+  //   if (!result) throw new InternalServerErrorException('can not create user');
+  //   return result;
+  // }
+  //
+  // @UseGuards(BasicAuthGuard)
+  // @Get()
+  // findAll(@Query() query: QueryUserDto) {
+  //   return this.usersQueryRepository.findAll(query);
+  // }
+  //
+  // @UseGuards(BasicAuthGuard)
+  // @Get(':id')
+  // async findOne(@Param('id') id: string) {
+  //   const user: ViewUserDto | null = await this.usersQueryRepository.findOne(id);
+  //   if (!user) throw new NotFoundException('user not found');
+  //   return user;
+  // }
+  //
+  // @UseGuards(BasicAuthGuard)
+  // @Delete(':id')
+  // @HttpCode(204)
+  // async remove(@Param('id') id: string) {
+  //   const result: boolean = await this.usersService.remove(id);
+  //   if (!result) throw new NotFoundException('User not found');
+  //   return;
+  // }
 }

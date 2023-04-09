@@ -32,11 +32,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     }
 
     const user: UserDocument | null = await this.usersService.findById(payload.userId);
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException('user is not found');
+    if (user.banInfo.isBanned) throw new UnauthorizedException('user is banned');
 
-    const device: SecurityDeviceDocument | null =
-      await this.securityDevicesService.findDeviceSession(payload.deviceId);
-
+    const device: SecurityDeviceDocument | null = await this.securityDevicesService.findDeviceSession(payload.deviceId);
     if (!device) throw new UnauthorizedException('device not found');
 
     // 4. Check that token is valid
@@ -45,12 +44,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       return;
     }
 
-    return new AuthTokenPayloadDto(
-      payload.userId,
-      user.accountData.login,
-      payload.deviceId,
-      payload.lastActiveDate,
-    );
+    return new AuthTokenPayloadDto(payload.userId, user.accountData.login, payload.deviceId, payload.lastActiveDate);
   }
 
   private static extractFromCookies(req: Request): string | null {

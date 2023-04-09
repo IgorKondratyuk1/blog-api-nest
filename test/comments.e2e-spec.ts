@@ -9,7 +9,7 @@ import { ViewBlogModel } from './models/blog/viewBlogModel';
 import { ViewPostModel } from './models/post/viewPostModel';
 import { ViewCommentModel } from './models/comment/viewCommentModel';
 import { CreateCommentModel } from './models/comment/createCommentModel';
-import { LikeStatus } from '../src/modules/blogs-composition/modules/likes/types/like';
+import { LikeStatus } from '../src/modules/blog-composition/modules/likes/types/like';
 import { UpdateCommentModel } from './models/comment/updateCommentModel';
 import { CommentType } from './types/commentTypes';
 

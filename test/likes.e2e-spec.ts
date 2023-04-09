@@ -8,7 +8,7 @@ import { CreatePostModel } from './models/post/createPostModel';
 import { ViewPostModel } from './models/post/viewPostModel';
 import { CreateCommentModel } from './models/comment/createCommentModel';
 import { ViewCommentModel } from './models/comment/viewCommentModel';
-import { LikeStatus } from '../src/modules/blogs-composition/modules/likes/types/like';
+import { LikeStatus } from '../src/modules/blog-composition/modules/likes/types/like';
 import { UpdateLikeModel } from './models/like/updateLikeModel';
 import { CreateBlogModel } from './models/blog/createBlogModel';
 

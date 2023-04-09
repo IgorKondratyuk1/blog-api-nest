@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './modules/users/users.module';
-import { BlogsCompositionModule } from './modules/blogs-composition/blogs-composition.module';
+import { BlogCompositionModule } from './modules/blog-composition/blog-composition.module';
 import { DeleteAllModule } from './modules/delete-all/delete-all.module';
 import { ConfigModule } from '@nestjs/config';
 import { getConfiguration } from './config/configuration';
@@ -14,6 +14,13 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SecurityDevicesController } from './modules/security-devices/security-devices.controller';
 import { APP_GUARD } from '@nestjs/core';
 import { SecurityConfigService } from './config/config-services/security-config.service';
+import { SuperAdminModule } from './modules/super-admin/super-admin.module';
+import { BloggerModule } from './modules/blogger/blogger.module';
+import { BanUserUseCase } from './modules/auth/use-cases/ban-user.use-case';
+import { RegisterUserUseCase } from './modules/auth/use-cases/register-user.use-case';
+import { BindBlogWithUserUseCase } from './modules/super-admin/use-cases/bind-blog-with-user.use-case';
+
+const CommandHandlers = [BanUserUseCase, RegisterUserUseCase, BindBlogWithUserUseCase];
 
 @Module({
   imports: [
@@ -39,12 +46,13 @@ import { SecurityConfigService } from './config/config-services/security-config.
       }),
     }),
     UsersModule,
-    BlogsCompositionModule,
+    BlogCompositionModule,
     DeleteAllModule,
-    AppConfigModule,
     AuthModule,
     SecurityDevicesModule,
     EmailModule,
+    SuperAdminModule,
+    BloggerModule,
   ],
   controllers: [SecurityDevicesController],
   providers: [
@@ -52,6 +60,7 @@ import { SecurityConfigService } from './config/config-services/security-config.
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    ...CommandHandlers,
   ],
 })
 export class AppModule {}
