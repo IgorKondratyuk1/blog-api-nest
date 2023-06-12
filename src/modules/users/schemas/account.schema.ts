@@ -11,7 +11,12 @@ export class Account {
   @Prop({ type: String, required: true, unique: true })
   passwordHash: string;
 
-  @Prop({ type: String, required: true, unique: true })
+  @Prop({
+    type: Date,
+    default: () => {
+      new Date();
+    },
+  })
   createdAt: string;
 }
 

@@ -41,7 +41,7 @@ import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { CookiesOptions } from './utils/CookiesOptions';
 import { CommandBus } from '@nestjs/cqrs';
-import { RegisterUserCommand } from './use-cases/register-user.use-case';
+import { RegisterUserCommand } from '../users/use-cases/register-user.use-case';
 
 @Controller('auth')
 export class AuthController {

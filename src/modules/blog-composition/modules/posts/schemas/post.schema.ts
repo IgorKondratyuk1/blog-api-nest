@@ -57,7 +57,12 @@ export class Post {
   @Prop({ type: String, required: true })
   blogName: string;
 
-  @Prop({ type: Date, required: true, default: Date })
+  @Prop({
+    type: Date,
+    default: () => {
+      new Date();
+    },
+  })
   createdAt: Date;
 
   @Prop({ type: Boolean, required: true, default: false })
@@ -88,6 +93,10 @@ export class Post {
     this.blogId = blogId;
   }
 
+  public setIsBanned(isBanned: boolean) {
+    this.isBanned = isBanned;
+  }
+
   public static createInstance(
     userId: string,
     blogId: string,
@@ -110,6 +119,7 @@ export const PostSchema = SchemaFactory.createForClass(Post);
 PostSchema.methods = {
   updatePost: Post.prototype.updatePost,
   updateBlogId: Post.prototype.updateBlogId,
+  setIsBanned: Post.prototype.setIsBanned,
 };
 
 PostSchema.statics = {

@@ -22,7 +22,7 @@ export class PostsService {
     private likesService: LikesService,
   ) {}
 
-  async findOne(id: string) {
+  async findById(id: string): Promise<PostDocument | null> {
     return this.postsRepository.findById(id);
   }
 
@@ -31,7 +31,7 @@ export class PostsService {
     blogId: string,
     createPostOfBlogDto: CreatePostOfBlogDto,
   ): Promise<ViewPostDto | CustomErrorDto> {
-    const blog: BlogDocument | null = await this.blogsRepository.findOne(blogId);
+    const blog: BlogDocument | null = await this.blogsRepository.findById(blogId);
     if (!blog) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'blog not found');
     if (blog.userId !== userId) {
       return new CustomErrorDto(HttpStatus.FORBIDDEN, "blog doesn't belong to current user");
@@ -102,8 +102,12 @@ export class PostsService {
     return result;
   }
 
-  async setBanStatusToUserPosts(userId: string, isBanned: boolean): Promise<boolean> {
-    return await this.postsRepository.setBanStatusToUserPosts(userId, isBanned);
+  async setBanStatusByUserId(userId: string, isBanned: boolean): Promise<boolean> {
+    return await this.postsRepository.setBanStatusByUserId(userId, isBanned);
+  }
+
+  async setBanStatusByBlogId(blogId: string, isBanned: boolean): Promise<boolean> {
+    return await this.postsRepository.setBanStatusToByBlogId(blogId, isBanned);
   }
 
   // TODO leave only one remove
@@ -122,7 +126,7 @@ export class PostsService {
   // }
 
   async removeWithBlogId(userId: string, postId: string, blogId: string): Promise<boolean | CustomErrorDto> {
-    const post: PostDocument | null = await this.findOne(postId);
+    const post: PostDocument | null = await this.findById(postId);
 
     if (!post) {
       return new CustomErrorDto(HttpStatus.NOT_FOUND, 'post is not found');

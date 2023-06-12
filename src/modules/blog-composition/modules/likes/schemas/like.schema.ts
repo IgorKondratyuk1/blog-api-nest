@@ -36,14 +36,14 @@ export class Like {
   @Prop({ type: String, required: true })
   locationId: string;
 
-  @Prop({ type: Boolean, required: true, default: false })
-  isBanned: boolean;
-
   @Prop({ type: String, required: true, enum: LikeLocation })
   locationName: LikeLocationsType;
 
   @Prop({ type: String, required: true, enum: LikeStatus, default: LikeStatus.None })
   myStatus: LikeStatusType;
+
+  @Prop({ type: Boolean, required: true, default: false })
+  isBanned: boolean;
 
   @Prop({
     type: Date,

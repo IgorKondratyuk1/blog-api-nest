@@ -5,7 +5,7 @@ import { UsersMapper } from './utils/users.mapper';
 import { UserDocument } from './schemas/user.schema';
 import ViewUserDto from './dto/view-user.dto';
 import { CustomErrorDto } from '../../common/dto/error';
-import { BanUserDto } from './dto/ban-user.dto';
+import { BanUserDto } from '../ban/dto/input/ban-user.dto';
 
 // TODO Question: Make use-cases for some difficult/business operations. Find, Create, Delete - keep in service
 @Injectable()

@@ -7,13 +7,16 @@ import { BlogDocument } from './schemas/blog.schema';
 import { ViewBlogDto } from './dto/view-blog.dto';
 import { CustomErrorDto } from '../../../../common/dto/error';
 import { UsersService } from '../../../users/users.service';
+import { BanUserDto } from '../../../ban/dto/input/ban-user.dto';
+import { UserDocument } from '../../../users/schemas/user.schema';
+import { BanBlogDto } from './dto/ban-blog.dto';
 
 @Injectable()
 export class BlogsService {
   constructor(private blogsRepository: BlogsRepository) {}
 
   async findById(id: string) {
-    return await this.blogsRepository.findOne(id);
+    return await this.blogsRepository.findById(id);
   }
 
   async create(userId: string, createBlogDto: CreateBlogDto): Promise<ViewBlogDto | CustomErrorDto> {
@@ -26,7 +29,7 @@ export class BlogsService {
 
   // TODO Question what return in update method. Return Updated object or CustomErrorDto
   async update(userId: string, blogId: string, updateBlogDto: UpdateBlogDto): Promise<boolean | CustomErrorDto> {
-    const blog: BlogDocument | null = await this.blogsRepository.findOne(blogId);
+    const blog: BlogDocument | null = await this.blogsRepository.findById(blogId);
     if (!blog) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'blog is not found');
 
     if (blog.userId !== userId) {
@@ -50,5 +53,14 @@ export class BlogsService {
     }
 
     return await this.blogsRepository.remove(blogId);
+  }
+
+  async setBlogBanStatus(blogId: string, banBlogDto: BanBlogDto): Promise<boolean | CustomErrorDto> {
+    const blog: BlogDocument | null = await this.blogsRepository.findById(blogId);
+    if (!blog) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'blog not found');
+
+    blog.setIsBanned(banBlogDto.isBanned);
+    await this.blogsRepository.save(blog);
+    return true;
   }
 }

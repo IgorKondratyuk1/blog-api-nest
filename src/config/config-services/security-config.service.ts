@@ -7,9 +7,7 @@ export class SecurityConfigService {
   constructor(private configService: ConfigService<ConfigurationType>) {}
 
   get jwtSecret(): string {
-    return (
-      this.configService.get('SECURITY', { infer: true }).JWT_SECRET ?? 'SecrEtToKeN11fsdagdsf'
-    );
+    return this.configService.get('SECURITY', { infer: true }).JWT_SECRET ?? 'SecrEtToKeN11fsdagdsf';
   }
 
   get accessTokenExpirationSeconds(): number {

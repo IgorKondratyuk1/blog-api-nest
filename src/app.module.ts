@@ -16,11 +16,20 @@ import { APP_GUARD } from '@nestjs/core';
 import { SecurityConfigService } from './config/config-services/security-config.service';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 import { BloggerModule } from './modules/blogger/blogger.module';
-import { BanUserUseCase } from './modules/auth/use-cases/ban-user.use-case';
-import { RegisterUserUseCase } from './modules/auth/use-cases/register-user.use-case';
-import { BindBlogWithUserUseCase } from './modules/super-admin/use-cases/bind-blog-with-user.use-case';
+import { RegisterUserUseCase } from './modules/users/use-cases/register-user.use-case';
+import { BanBlogUseCase } from './modules/blog-composition/modules/blogs/use-cases/ban-blog.use-case';
+import { BindBlogWithUserUseCase } from './modules/blog-composition/modules/blogs/use-cases/bind-blog-with-user.use-case';
+import { BanModule } from './modules/ban/ban.module';
+import { BanUserBySaUseCase } from './modules/users/use-cases/ban-user-by-sa.use-case';
+import { BanUserByBloggerUseCase } from './modules/users/use-cases/ban-user-by-blogger.use-case';
 
-const CommandHandlers = [BanUserUseCase, RegisterUserUseCase, BindBlogWithUserUseCase];
+const CommandHandlers = [
+  RegisterUserUseCase,
+  BindBlogWithUserUseCase,
+  BanUserBySaUseCase,
+  BanBlogUseCase,
+  BanUserByBloggerUseCase,
+];
 
 @Module({
   imports: [
@@ -53,6 +62,7 @@ const CommandHandlers = [BanUserUseCase, RegisterUserUseCase, BindBlogWithUserUs
     EmailModule,
     SuperAdminModule,
     BloggerModule,
+    BanModule,
   ],
   controllers: [SecurityDevicesController],
   providers: [

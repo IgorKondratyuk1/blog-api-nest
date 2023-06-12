@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { add } from 'date-fns';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { BanInfo, BanInfoSchema } from './ban-info.schema';
+import { BanExtendedInfo, BanExtendedInfoSchema } from '../../ban/schemas/ban-extended-info.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -39,8 +39,8 @@ export class User {
   @Prop({ type: String, required: true, default: randomUUID })
   id: string;
 
-  @Prop({ type: BanInfoSchema })
-  banInfo: BanInfo;
+  @Prop({ type: BanExtendedInfoSchema })
+  banInfo: BanExtendedInfo;
 
   @Prop({ type: AccountSchema })
   accountData: Account;
@@ -51,7 +51,12 @@ export class User {
   @Prop({ type: PasswordRecoverySchema })
   passwordRecovery: PasswordRecovery;
 
-  @Prop({ type: Date })
+  @Prop({
+    type: Date,
+    default: () => {
+      new Date();
+    },
+  })
   createdAt: Date;
 
   @Prop({ type: Date })
@@ -71,6 +76,8 @@ export class User {
   setIsBanned(isBanned: boolean, banReason: string) {
     if (!banReason) throw new Error('Can not ban user without "ban reason"');
 
+    this.banInfo.isBanned = isBanned;
+
     if (isBanned) {
       this.banInfo.banReason = banReason;
       this.banInfo.banDate = new Date();
@@ -78,8 +85,6 @@ export class User {
       this.banInfo.banReason = null;
       this.banInfo.banDate = null;
     }
-
-    this.banInfo.isBanned = isBanned;
   }
 
   setEmailConfirmationCode(code: string) {

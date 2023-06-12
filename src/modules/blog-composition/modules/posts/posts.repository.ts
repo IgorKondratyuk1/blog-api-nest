@@ -25,13 +25,27 @@ export class PostsRepository {
     return result;
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<PostDocument | null> {
     return this.postModel.findOne({ id });
   }
 
-  async setBanStatusToUserPosts(userId: string, isBanned: boolean) {
+  async findAllByIds(id: string[]): Promise<PostDocument[]> {
+    return this.postModel.find({ id: { $in: id } });
+  }
+
+  async setBanStatusByUserId(userId: string, isBanned: boolean) {
     try {
       await this.postModel.updateMany({ userId }, { isBanned });
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  }
+
+  async setBanStatusToByBlogId(blogId: string, isBanned: boolean) {
+    try {
+      await this.postModel.updateMany({ blogId }, { isBanned });
       return true;
     } catch (e) {
       console.log(e);

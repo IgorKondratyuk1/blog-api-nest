@@ -23,9 +23,10 @@ export class CommentsRepository {
     userId: string,
     userLogin: string,
     postId: string,
+    blogId: string,
   ): Promise<CommentDocument | null> {
     try {
-      const newComment: Comment = Comment.createInstance(createCommentDto, userId, userLogin, postId);
+      const newComment: Comment = Comment.createInstance(createCommentDto, userId, userLogin, postId, blogId);
       const result: CommentDocument = await this.commentModel.create(newComment);
       return result;
     } catch (e) {

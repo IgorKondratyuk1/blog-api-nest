@@ -1,4 +1,6 @@
 import { BlogOwnerInfoDto } from './blog-owner-info.dto';
+import { BanInfo } from '../../../../ban/schemas/ban-info.schema';
+import { ViewBanInfoDto } from '../../../../ban/dto/output/view-ban-info.dto';
 
 export class ViewExtendedBlogDto {
   constructor(
@@ -8,6 +10,7 @@ export class ViewExtendedBlogDto {
     public websiteUrl: string,
     public createdAt: string,
     public isMembership: boolean,
-    public blogOwnerInfo: BlogOwnerInfoDto,
+    public blogOwnerInfo: BlogOwnerInfoDto | null,
+    public banInfo: ViewBanInfoDto,
   ) {}
 }

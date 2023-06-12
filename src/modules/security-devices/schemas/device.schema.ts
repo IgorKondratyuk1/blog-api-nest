@@ -37,7 +37,12 @@ export class SecurityDevice {
   @Prop({ type: Boolean })
   isValid: boolean;
 
-  @Prop({ type: Date, required: true })
+  @Prop({
+    type: Date,
+    default: () => {
+      new Date();
+    },
+  })
   createdAt: Date;
 
   @Prop({ type: Date, required: true })
@@ -47,16 +52,8 @@ export class SecurityDevice {
     this.lastActiveDate = lastActiveDate;
   }
 
-  public static createInstance(
-    createBlogDto: CreateSecurityDeviceDto,
-    expiredDeviceSessionDays: number,
-  ) {
-    return new SecurityDevice(
-      createBlogDto.userId,
-      createBlogDto.ip,
-      createBlogDto.title,
-      expiredDeviceSessionDays,
-    );
+  public static createInstance(createBlogDto: CreateSecurityDeviceDto, expiredDeviceSessionDays: number) {
+    return new SecurityDevice(createBlogDto.userId, createBlogDto.ip, createBlogDto.title, expiredDeviceSessionDays);
   }
 }
 

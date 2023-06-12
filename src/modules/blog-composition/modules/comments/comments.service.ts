@@ -11,7 +11,9 @@ import { UsersRepository } from '../../../users/users.repository';
 import { LikeLocation, LikeStatusType } from '../likes/types/like';
 import { LikesService } from '../likes/likes.service';
 import { CommentsMapper } from './utils/comments.mapper';
-import { ViewCommentDto } from './dto/view-comment.dto';
+import { ViewPublicCommentDto } from './dto/view-public-comment.dto';
+import { BloggerBanInfoRepository } from '../../../ban/blogger-ban-info.repository';
+import { BloggerBanInfoDocument } from '../../../ban/schemas/blogger-ban-info.schema';
 
 @Injectable()
 export class CommentsService {
@@ -20,15 +22,24 @@ export class CommentsService {
     private postsRepository: PostsRepository,
     private usersRepository: UsersRepository,
     private likesService: LikesService,
+    private bloggerBanInfoRepository: BloggerBanInfoRepository,
   ) {}
 
   async create(
     createCommentDto: CreateCommentDto,
     postId: string,
     userId: string,
-  ): Promise<ViewCommentDto | CustomErrorDto> {
+  ): Promise<ViewPublicCommentDto | CustomErrorDto> {
     const post: PostDocument | null = await this.postsRepository.findById(postId);
     if (!post) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'post is not found');
+
+    // TODO to Use-case
+    // Check if user can create comment
+    const banInfo: BloggerBanInfoDocument | null = await this.bloggerBanInfoRepository.findByUserIdAndBlogId(
+      userId,
+      post.blogId,
+    );
+    if (banInfo) return new CustomErrorDto(HttpStatus.FORBIDDEN, 'banned user for blog can not create comments');
 
     const user: UserDocument | null = await this.usersRepository.findById(userId);
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user is not found');
@@ -38,10 +49,11 @@ export class CommentsService {
       user.id,
       user.accountData.login,
       post.id,
+      post.blogId,
     );
     if (!comment) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'comment is not created');
 
-    return CommentsMapper.toView(comment);
+    return CommentsMapper.toPublicView(comment);
   }
 
   async findOne(id: string): Promise<CommentDocument | null> {
@@ -65,7 +77,6 @@ export class CommentsService {
     userLogin: string,
     status: LikeStatusType,
   ): Promise<boolean | CustomErrorDto> {
-    //debugger;
     const comment: CommentDocument | null = await this.commentsRepository.findById(id);
     if (!comment) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'comment not found');
 

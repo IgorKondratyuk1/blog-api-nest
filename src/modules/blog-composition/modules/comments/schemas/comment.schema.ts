@@ -9,12 +9,13 @@ export type CommentDocument = HydratedDocument<Comment>;
 
 @Schema()
 export class Comment {
-  constructor(content: string, userId: string, userLogin: string, postId: string) {
+  constructor(content: string, userId: string, userLogin: string, postId: string, blogId: string) {
     this.id = randomUUID();
     this.createdAt = new Date();
     this.content = content;
     this.commentatorInfo = new CommentatorInfo(userId, userLogin);
     this.postId = postId;
+    this.blogId = blogId;
     this.isBanned = false;
   }
 
@@ -26,6 +27,9 @@ export class Comment {
 
   @Prop({ type: String, required: true })
   postId: string;
+
+  @Prop({ type: String, required: true })
+  blogId: string;
 
   @Prop({ type: CommentatorInfoSchema, required: true })
   commentatorInfo: CommentatorInfo;
@@ -45,8 +49,14 @@ export class Comment {
     this.content = updateCommentDto.content;
   }
 
-  public static createInstance(createCommentDto: CreateCommentDto, userId: string, userLogin: string, postId: string) {
-    return new Comment(createCommentDto.content, userId, userLogin, postId);
+  public static createInstance(
+    createCommentDto: CreateCommentDto,
+    userId: string,
+    userLogin: string,
+    postId: string,
+    blogId: string,
+  ) {
+    return new Comment(createCommentDto.content, userId, userLogin, postId, blogId);
   }
 }
 

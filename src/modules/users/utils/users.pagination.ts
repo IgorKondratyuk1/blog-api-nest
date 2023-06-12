@@ -1,5 +1,5 @@
 import { Paginator } from '../../../common/utils/paginator';
-import { BanStatusesType } from '../types/ban-statuses';
+import { BanStatusesType } from '../../ban/types/ban-statuses';
 
 export class UsersPaginator extends Paginator {
   public static getBanStatus(banStatus: BanStatusesType): boolean | null {

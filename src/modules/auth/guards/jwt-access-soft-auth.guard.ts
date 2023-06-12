@@ -6,10 +6,7 @@ import { AuthUserPayloadDto } from '../dto/auth-user-payload.dto';
 
 @Injectable()
 export class JwtAccessSoftAuthGuard implements CanActivate {
-  constructor(
-    private jwtService: JwtService,
-    private securityConfigService: SecurityConfigService,
-  ) {}
+  constructor(private jwtService: JwtService, private securityConfigService: SecurityConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();

@@ -1,3 +1,3 @@
 export class BlogOwnerInfoDto {
-  constructor(public userId: string, public userLogin: string) {}
+  constructor(public userId: string | null, public userLogin: string | null) {}
 }

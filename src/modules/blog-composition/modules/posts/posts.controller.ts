@@ -18,7 +18,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsQueryRepository } from './posts.query-repository';
 import { CommentsQueryRepository } from '../comments/comments.query-repository';
-import { ViewCommentDto } from '../comments/dto/view-comment.dto';
+import { ViewPublicCommentDto } from '../comments/dto/view-public-comment.dto';
 import { QueryDto } from '../../../../common/dto/query.dto';
 import { PaginationDto } from '../../../../common/dto/pagination';
 import { JwtAccessStrictAuthGuard } from '../../../auth/guards/jwt-access-strict-auth.guard';
@@ -96,7 +96,7 @@ export class PostsController {
     @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    const result: ViewCommentDto | CustomErrorDto = await this.commentsService.create(
+    const result: ViewPublicCommentDto | CustomErrorDto = await this.commentsService.create(
       createCommentDto,
       id,
       tokenPayload.userId,
@@ -111,8 +111,8 @@ export class PostsController {
     @Param('id') id: string,
     @Query() query: QueryDto,
     @CurrentUserId() userId: string,
-  ): Promise<PaginationDto<ViewCommentDto>> {
-    const post: PostDocument | null = await this.postsService.findOne(id);
+  ): Promise<PaginationDto<ViewPublicCommentDto>> {
+    const post: PostDocument | null = await this.postsService.findById(id);
     if (!post) throw new NotFoundException('post not found');
     return await this.commentsQueryRepository.findCommentsOfPost(id, query, userId);
   }

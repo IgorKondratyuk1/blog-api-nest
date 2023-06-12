@@ -9,6 +9,8 @@ import { ViewBlogDto } from './dto/view-blog.dto';
 import { PaginationDto } from '../../../../common/dto/pagination';
 import { ViewExtendedBlogDto } from './dto/view-extended-blog.dto';
 import { UsersRepository } from '../../../users/users.repository';
+import { UserDocument } from '../../../users/schemas/user.schema';
+import { Post } from '../posts/schemas/post.schema';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -31,12 +33,7 @@ export class BlogsQueryRepository {
       name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
     };
 
-    const foundedBlogs: Blog[] = await this.blogModel
-      .find(filters)
-      .sort({ [queryObj.sortBy]: sortValue })
-      .skip(skipValue)
-      .limit(queryObj.pageSize)
-      .lean();
+    const foundedBlogs: Blog[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
 
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
     const totalCount: number = await this.blogModel.countDocuments(filters);
@@ -51,24 +48,19 @@ export class BlogsQueryRepository {
     );
   }
 
-  async findExtendedBlogs(queryObj: QueryDto): Promise<PaginationDto<ViewExtendedBlogDto>> {
+  async findBlogsWithExtendedInfo(queryObj: QueryDto): Promise<PaginationDto<ViewExtendedBlogDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
     const filters = {
       name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
     };
 
-    const foundedBlogs: Blog[] = await this.blogModel
-      .find(filters)
-      .sort({ [queryObj.sortBy]: sortValue })
-      .skip(skipValue)
-      .limit(queryObj.pageSize)
-      .lean();
+    const foundedBlogs: Blog[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
 
     const blogsViewModels: ViewExtendedBlogDto[] = await Promise.all(
       foundedBlogs.map(async (blog) => {
-        const user = await this.usersRepository.findById(blog.userId);
-        return BlogMapper.toExtendedView(blog, user.id, user.accountData.login);
+        const user: UserDocument | null = await this.usersRepository.findById(blog.userId);
+        return BlogMapper.toExtendedView(blog, user);
       }),
     );
 
@@ -84,7 +76,7 @@ export class BlogsQueryRepository {
     );
   }
 
-  async findBlogsByUserId(userId: string, queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>> {
+  async findBlogsByCreatedUserId(userId: string, queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
 
@@ -93,12 +85,7 @@ export class BlogsQueryRepository {
       userId,
     };
 
-    const foundedBlogs: Blog[] = await this.blogModel
-      .find(filters)
-      .sort({ [queryObj.sortBy]: sortValue })
-      .skip(skipValue)
-      .limit(queryObj.pageSize)
-      .lean();
+    const foundedBlogs: Blog[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
 
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
     const totalCount: number = await this.blogModel.countDocuments(filters);
@@ -111,5 +98,14 @@ export class BlogsQueryRepository {
       totalCount,
       blogsViewModels,
     );
+  }
+
+  async findBlogByFilters(filters, queryObj, sortValue, skipValue): Promise<Blog[]> {
+    return this.blogModel
+      .find(filters)
+      .sort({ [queryObj.sortBy]: sortValue })
+      .skip(skipValue)
+      .limit(queryObj.pageSize)
+      .lean();
   }
 }

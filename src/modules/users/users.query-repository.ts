@@ -13,17 +13,18 @@ import { UsersPaginator } from './utils/users.pagination';
 export class UsersQueryRepository {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async findOne(id: string): Promise<ViewUserDto | null> {
+  async findById(id: string): Promise<ViewUserDto | null> {
     const dbUser: UserDocument | null = await this.userModel.findOne({ id });
     if (!dbUser) return null;
 
     return UsersMapper.toView(dbUser);
   }
 
+  // All data about user. Only for SA
   async findAll(queryObj: QueryUserDto): Promise<PaginationDto<ViewUserDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
-    const filters = this.getFilters(queryObj);
+    const filters = this.getUsersFilters(queryObj);
 
     const foundedUsers: User[] = await this.userModel
       .find(filters)
@@ -45,7 +46,7 @@ export class UsersQueryRepository {
     );
   }
 
-  private getFilters = (queryObj: QueryUserDto) => {
+  private getUsersFilters = (queryObj: QueryUserDto) => {
     const banStatus: boolean | null = UsersPaginator.getBanStatus(queryObj.banStatus);
 
     return {

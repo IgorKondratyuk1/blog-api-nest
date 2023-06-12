@@ -11,13 +11,10 @@ export class DbConfigService {
   }
 
   get dbBaseUri(): string {
-    return (
-      this.configService.get('DB', { infer: true }).MONGO.MONGO_BASE_URL ??
-      'mongodb://127.0.0.1:27017/'
-    );
+    return this.configService.get('DB', { infer: true }).MONGO.MONGO_BASE_URL ?? 'mongodb://127.0.0.1:27017/';
   }
 
   get dbName(): string {
-    return this.configService.get('DB', { infer: true }).MONGO.MONGO_DB_NAME ?? 'blogApi';
+    return this.configService.get('DB', { infer: true }).MONGO.MONGO_DB_NAME ?? 'blogDB';
   }
 }

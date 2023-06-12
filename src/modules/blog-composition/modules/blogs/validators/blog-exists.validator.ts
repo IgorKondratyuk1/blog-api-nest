@@ -1,8 +1,4 @@
-import {
-  ValidationArguments,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
+import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BlogsRepository } from '../blogs.repository';
 
@@ -13,7 +9,7 @@ export class BlogExistsRule implements ValidatorConstraintInterface {
 
   async validate(value: string) {
     try {
-      const blog = await this.blogsRepository.findOne(value);
+      const blog = await this.blogsRepository.findById(value);
       if (!blog) return false;
     } catch (e) {
       console.log(e);

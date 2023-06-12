@@ -8,13 +8,17 @@ import { Comment, CommentSchema } from './schemas/comment.schema';
 import { UsersModule } from '../../../users/users.module';
 import { LikesModule } from '../likes/likes.module';
 import { CommentsService } from './comments.service';
+import { BanModule } from '../../../ban/ban.module';
+import { BlogsModule } from '../blogs/blogs.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
     forwardRef(() => PostsModule),
+    forwardRef(() => BlogsModule),
     UsersModule,
     LikesModule,
+    BanModule,
   ],
   controllers: [CommentsController],
   providers: [CommentsQueryRepository, CommentsRepository, CommentsService],

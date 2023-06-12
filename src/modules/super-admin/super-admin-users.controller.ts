@@ -18,9 +18,9 @@ import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import ViewUserDto from '../users/dto/view-user.dto';
 import { QueryUserDto } from '../users/dto/query-user.dto';
-import { BanUserDto } from '../users/dto/ban-user.dto';
+import { BanUserDto } from '../ban/dto/input/ban-user.dto';
 import { CommandBus } from '@nestjs/cqrs';
-import { BanUserCommand } from '../auth/use-cases/ban-user.use-case';
+import { BanUserBySaCommand } from '../users/use-cases/ban-user-by-sa.use-case';
 
 @Controller('sa/users')
 export class SuperAdminUsersController {
@@ -34,7 +34,7 @@ export class SuperAdminUsersController {
   @Put(':userId/ban')
   @HttpCode(204)
   async banUser(@Param('userId') userId: string, @Body() banUserDto: BanUserDto) {
-    const result: ViewUserDto | null = await this.commandBus.execute(new BanUserCommand(userId, banUserDto));
+    const result: ViewUserDto | null = await this.commandBus.execute(new BanUserBySaCommand(userId, banUserDto));
     if (!result) throw new InternalServerErrorException('');
     return;
   }

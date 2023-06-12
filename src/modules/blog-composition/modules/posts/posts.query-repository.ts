@@ -45,12 +45,7 @@ export class PostsQueryRepository {
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
     const filters = { isBanned: false };
 
-    const foundedPosts: Post[] = await this.postModel
-      .find(filters)
-      .sort({ [queryObj.sortBy]: sortValue })
-      .skip(skipValue)
-      .limit(queryObj.pageSize)
-      .lean();
+    const foundedPosts = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
 
     const postsViewModels: ViewPostDto[] = await Promise.all(
       foundedPosts.map(async (post) => {
@@ -76,14 +71,9 @@ export class PostsQueryRepository {
   ): Promise<PaginationDto<ViewPostDto>> {
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
-    const filters = { blogId: blogId, isBanned: false }; // TODO make method for filters (in other classes also)
+    const filters = { blogId: blogId, isBanned: false }; // TODO make method for filters (in other classes also) Filters Fabric
 
-    const foundedPosts: Post[] = await this.postModel
-      .find(filters)
-      .sort({ [queryObj.sortBy]: sortValue })
-      .skip(skipValue)
-      .limit(queryObj.pageSize)
-      .lean();
+    const foundedPosts = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
 
     const postsViewModels: any[] = await Promise.all(
       foundedPosts.map(async (post: any) => {
@@ -112,12 +102,7 @@ export class PostsQueryRepository {
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
     const filters = { blogId, userId, isBanned: false };
 
-    const foundedPosts: Post[] = await this.postModel
-      .find(filters)
-      .sort({ [queryObj.sortBy]: sortValue })
-      .skip(skipValue)
-      .limit(queryObj.pageSize)
-      .lean();
+    const foundedPosts = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
 
     const postsViewModels: any[] = await Promise.all(
       foundedPosts.map(async (post: any) => {
@@ -135,5 +120,14 @@ export class PostsQueryRepository {
       totalCount,
       postsViewModels,
     );
+  }
+
+  async findPostByFilters(filters, queryObj, sortValue, skipValue): Promise<Post[]> {
+    return this.postModel
+      .find(filters)
+      .sort({ [queryObj.sortBy]: sortValue })
+      .skip(skipValue)
+      .limit(queryObj.pageSize)
+      .lean();
   }
 }

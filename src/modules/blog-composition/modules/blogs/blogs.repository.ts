@@ -29,9 +29,18 @@ export class BlogsRepository {
     }
   }
 
-  async findOne(id: string): Promise<BlogDocument | null> {
+  async findById(id: string): Promise<BlogDocument | null> {
     try {
       return this.blogModel.findOne({ id });
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  }
+
+  async findByUserId(userId: string): Promise<BlogDocument[]> {
+    try {
+      return this.blogModel.find({ userId });
     } catch (e) {
       console.log(e);
       return null;

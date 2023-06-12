@@ -1,4 +1,4 @@
-import { ViewBanInfoDto } from './view-ban-info.dto';
+import { ViewBanExtendedInfoDto } from '../../ban/dto/output/view-ban-extended-info.dto';
 
 export default class ViewUserDto {
   constructor(
@@ -6,6 +6,6 @@ export default class ViewUserDto {
     public login: string,
     public email: string,
     public createdAt: string,
-    public banInfo: ViewBanInfoDto,
+    public banInfo: ViewBanExtendedInfoDto,
   ) {}
 }
