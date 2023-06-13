@@ -1,6 +1,5 @@
 import { QueryBannedUserDto } from '../users/dto/query-banned-user.dto';
 import { PaginationDto } from '../../common/dto/pagination';
-import ViewUserDto from '../users/dto/view-user.dto';
 import { Paginator } from '../../common/utils/paginator';
 import { UsersMapper } from '../users/utils/users.mapper';
 import { Injectable } from '@nestjs/common';
@@ -18,9 +17,12 @@ export class BanQueryRepository {
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
     const filters = { ...queryObj, locationId: blogId, isBanned: true };
 
+    // TODO fix
+    const sortBy = queryObj.sortBy === 'login' ? 'userLogin' : queryObj.sortBy;
+
     const bansInfo: BloggerBanInfo[] = await this.bloggerBanModel
       .find(filters)
-      .sort({ [`${queryObj.sortBy}`]: sortValue })
+      .sort({ [`${sortBy}`]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
       .lean();
