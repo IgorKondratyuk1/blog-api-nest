@@ -114,8 +114,24 @@ export class CommentsQueryRepository {
 
     const commentsViewModels: ViewBloggerCommentDto[] = await Promise.all(
       foundedComments.map(async (comment) => {
+        const likeStatus: LikeStatusType = await this.likesRepository.getUserLikeStatus(
+          userId,
+          comment.id,
+          LikeLocation.Comment,
+        );
+
+        const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(
+          comment.id,
+        );
+
         const post: PostDocument | null = await this.postsRepository.findById(comment.postId);
-        return CommentsMapper.toBloggerView(comment, post);
+        return CommentsMapper.toBloggerView(
+          comment,
+          post,
+          likeStatus,
+          likesDislikesCount.likesCount,
+          likesDislikesCount.dislikesCount,
+        );
       }),
     );
 

@@ -24,8 +24,15 @@ export class CommentsMapper {
     );
   }
 
-  public static toBloggerView(comment: Comment | CommentDocument, post: PostDocument) {
+  public static toBloggerView(
+    comment: Comment | CommentDocument,
+    post: PostDocument,
+    likeStatus: LikeStatusType = LikeStatus.None,
+    likesCount = 0,
+    dislikesCount = 0,
+  ) {
     const postInfoDto: ViewPostInfoDto = new ViewPostInfoDto(post.id, post.title, post.blogId, post.blogName);
+    const likeInfo = new LikesInfo(likesCount, dislikesCount, likeStatus);
 
     return new ViewBloggerCommentDto(
       comment.id,
@@ -33,6 +40,7 @@ export class CommentsMapper {
       comment.commentatorInfo,
       comment.createdAt.toISOString(),
       postInfoDto,
+      likeInfo,
     );
   }
 }

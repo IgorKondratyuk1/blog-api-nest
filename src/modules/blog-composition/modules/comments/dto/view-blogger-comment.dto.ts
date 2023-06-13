@@ -9,5 +9,6 @@ export class ViewBloggerCommentDto {
     public commentatorInfo: CommentatorInfo,
     public createdAt: string,
     public postInfo: ViewPostInfoDto,
+    public likesInfo: LikesInfo = new LikesInfo(),
   ) {}
 }

@@ -20,7 +20,7 @@ export class BlogsQueryRepository {
   ) {}
 
   async findOne(id: string): Promise<ViewBlogDto | null> {
-    const dbBlog = await this.blogModel.findOne({ id });
+    const dbBlog = await this.blogModel.findOne({ id, isBanned: false });
     if (!dbBlog) return null;
 
     return BlogMapper.toView(dbBlog);
@@ -31,6 +31,7 @@ export class BlogsQueryRepository {
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
     const filters = {
       name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
+      isBanned: false,
     };
 
     const foundedBlogs: Blog[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
@@ -53,6 +54,7 @@ export class BlogsQueryRepository {
     const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
     const filters = {
       name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
+      isBanned: false,
     };
 
     const foundedBlogs: Blog[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
@@ -82,6 +84,7 @@ export class BlogsQueryRepository {
 
     const filters = {
       name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
+      isBanned: false,
       userId,
     };
 

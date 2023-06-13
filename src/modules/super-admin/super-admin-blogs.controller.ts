@@ -31,8 +31,8 @@ export class SuperAdminBlogsController {
   }
 
   @UseGuards(BasicAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Put(':blogId/bind-with-user/:userId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async bindWithUser(@Param('blogId') blogId: string, @Param('userId') userId: string) {
     const result: boolean | CustomErrorDto = await this.commandBus.execute(new BindBlogWithUserCommand(userId, blogId));
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
@@ -42,7 +42,7 @@ export class SuperAdminBlogsController {
 
   @UseGuards(BasicAuthGuard)
   @Put(':blogId/ban')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async banUser(@Param('blogId') blogId: string, @Body() banBlogDto: BanBlogDto) {
     const result: boolean | CustomErrorDto = await this.commandBus.execute(new BanBlogCommand(blogId, banBlogDto));
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
