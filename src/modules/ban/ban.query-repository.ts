@@ -20,7 +20,7 @@ export class BanQueryRepository {
 
     const bansInfo: BloggerBanInfo[] = await this.bloggerBanModel
       .find(filters)
-      .sort({ [`accountData.${queryObj.sortBy}`]: sortValue })
+      .sort({ [`${queryObj.sortBy}`]: sortValue })
       .skip(skipValue)
       .limit(queryObj.pageSize)
       .lean();
