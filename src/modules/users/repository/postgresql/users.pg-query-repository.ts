@@ -23,7 +23,8 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
     const sortValue: string = queryObj.sortDirection.toUpperCase();
     const filters = this.getUsersFilters(queryObj);
 
-    const queryTotalCount = 'SELECT count(*) FROM public."user";';
+    const queryTotalCount = `SELECT count(*) FROM public."user" ${filters};`;
+    console.log(queryTotalCount);
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
