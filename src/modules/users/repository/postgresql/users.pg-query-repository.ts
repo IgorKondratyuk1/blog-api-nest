@@ -23,7 +23,7 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
     const sortValue: string = queryObj.sortDirection.toUpperCase();
     const filters = this.getUsersFilters(queryObj);
 
-    const queryTotalCount = `SELECT count(*) FROM public."user" ${filters};`;
+    const queryTotalCount = `SELECT count(*) FROM public."user" u LEFT JOIN public."account" acc ON u.account_id = acc.id ${filters};`;
     console.log(queryTotalCount);
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
     const totalCount = Number(resultTotalCount[0].count);
