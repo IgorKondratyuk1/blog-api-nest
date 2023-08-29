@@ -11,16 +11,17 @@ import {
   NotFoundException,
   HttpCode,
   Put,
+  Inject,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { UsersQueryRepository } from '../users/users.query-repository';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import ViewUserDto from '../users/dto/view-user.dto';
-import { QueryUserDto } from '../users/dto/query-user.dto';
+import { CreateUserDto } from '../users/dto/input/create-user.dto';
+import ViewUserDto from '../users/dto/output/view-user.dto';
+import { QueryUserDto } from '../users/dto/input/query-user.dto';
 import { BanUserDto } from '../ban/dto/input/ban-user.dto';
 import { CommandBus } from '@nestjs/cqrs';
 import { BanUserBySaCommand } from '../users/use-cases/ban-user-by-sa.use-case';
+import { UsersQueryRepository } from '../users/interfaces/users.query-repository';
 
 @Controller('sa/users')
 export class SuperAdminUsersController {

@@ -1,5 +1,3 @@
-import { Injectable } from '@nestjs/common';
-
 export class CookiesOptions {
   public static createOptions(isHttpOnly: boolean, secure: string, maxAge: number) {
     return {

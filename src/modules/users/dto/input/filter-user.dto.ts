@@ -1,4 +1,4 @@
-import { FilterDto } from '../../../common/dto/filter.dto';
+import { FilterDto } from '../../../../common/dto/filter.dto';
 
 export class UserFilterDto extends FilterDto {
   public searchLoginTerm: string | null;

@@ -1,4 +1,4 @@
-import { QueryBannedUserDto } from '../users/dto/query-banned-user.dto';
+import { QueryBannedUserDto } from '../users/dto/input/query-banned-user.dto';
 import { PaginationDto } from '../../common/dto/pagination';
 import { Paginator } from '../../common/utils/paginator';
 import { UsersMapper } from '../users/utils/users.mapper';
@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BloggerBanInfo, BloggerBanInfoDocument } from './schemas/blogger-ban-info.schema';
-import ViewUserInfoDto from '../users/dto/view-user-info.dto';
+import ViewUserInfoDto from '../users/dto/output/view-user-info.dto';
 
 @Injectable()
 export class BanQueryRepository {

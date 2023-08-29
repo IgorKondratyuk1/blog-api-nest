@@ -1,11 +1,7 @@
-import {
-  ValidationArguments,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
+import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../users/users.repository';
-import { UserDocument } from '../../users/schemas/user.schema';
+import UserModel from '../../users/models/user.model';
+import { UsersRepository } from '../../users/interfaces/users.repository';
 
 @ValidatorConstraint({ name: 'EmailResend', async: true })
 @Injectable()
@@ -14,7 +10,7 @@ export class EmailResendRule implements ValidatorConstraintInterface {
 
   async validate(value: string) {
     try {
-      const user: UserDocument | null = await this.usersRepository.findUserByLoginOrEmail(value);
+      const user: UserModel | null = await this.usersRepository.findUserByLoginOrEmail(value);
       if (!user) return false;
       if (user.emailConfirmation.isConfirmed) return false;
     } catch (e) {

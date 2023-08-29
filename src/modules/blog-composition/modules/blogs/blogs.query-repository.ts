@@ -8,9 +8,8 @@ import { QueryDto } from '../../../../common/dto/query.dto';
 import { ViewBlogDto } from './dto/view-blog.dto';
 import { PaginationDto } from '../../../../common/dto/pagination';
 import { ViewExtendedBlogDto } from './dto/view-extended-blog.dto';
-import { UsersRepository } from '../../../users/users.repository';
-import { UserDocument } from '../../../users/schemas/user.schema';
-import { Post } from '../posts/schemas/post.schema';
+import UserModel from '../../../users/models/user.model';
+import { UsersRepository } from '../../../users/interfaces/users.repository';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -62,7 +61,7 @@ export class BlogsQueryRepository {
 
     const blogsViewModels: ViewExtendedBlogDto[] = await Promise.all(
       foundedBlogs.map(async (blog) => {
-        const user: UserDocument | null = await this.usersRepository.findById(blog.userId);
+        const user: UserModel | null = await this.usersRepository.findById(blog.userId);
         return BlogMapper.toExtendedView(blog, user);
       }),
     );

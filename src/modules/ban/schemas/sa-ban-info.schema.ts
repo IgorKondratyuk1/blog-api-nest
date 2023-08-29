@@ -1,8 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LikeLocation, LikeLocationsType, LikeStatusType } from '../../blog-composition/modules/likes/types/like';
-import { BanLocation, BanLocationType } from '../types/ban-locations';
 import { HydratedDocument } from 'mongoose';
-import { Like, LikeSchema } from '../../blog-composition/modules/likes/schemas/like.schema';
 import { randomUUID } from 'crypto';
 
 export type SuperAdminBanInfoDocument = HydratedDocument<SuperAdminBanInfo>;

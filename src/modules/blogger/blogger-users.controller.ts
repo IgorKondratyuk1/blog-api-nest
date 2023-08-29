@@ -18,7 +18,7 @@ import { CustomErrorDto } from '../../common/dto/error';
 import { CreateBanByBloggerDto } from '../ban/dto/input/create-ban-by-blogger.dto';
 import { BanService } from '../ban/ban.service';
 import { BanQueryRepository } from '../ban/ban.query-repository';
-import { QueryBannedUserDto } from '../users/dto/query-banned-user.dto';
+import { QueryBannedUserDto } from '../users/dto/input/query-banned-user.dto';
 import { BanUserByBloggerCommand } from '../users/use-cases/ban-user-by-blogger.use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsService } from '../blog-composition/modules/blogs/blogs.service';

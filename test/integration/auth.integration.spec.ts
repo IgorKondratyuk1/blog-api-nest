@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model } from 'mongoose';
 import { Blog, BlogSchema } from '../../src/modules/blog-composition/modules/blogs/schemas/blog.schema';
-import { User, UserSchema } from '../../src/modules/users/schemas/user.schema';
+import { User, UserSchema } from '../../src/modules/users/repository/mongoose/schemas/user.schema';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppConfigModule } from '../../src/config/app-config.module';

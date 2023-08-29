@@ -1,13 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserDocument } from '../../users/schemas/user.schema';
+import { UserDocument } from '../../users/repository/mongoose/schemas/user.schema';
 import { SecurityDevicesService } from '../../security-devices/security-devices.service';
 import { UsersService } from '../../users/users.service';
 import { SecurityDeviceDocument } from '../../security-devices/schemas/device.schema';
 import { AuthTokenPayloadDto } from '../dto/auth-token-payload.dto';
 import { SecurityConfigService } from '../../../config/config-services/security-config.service';
 import { Request } from 'express';
+import UserModel from '../../users/models/user.model';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
@@ -31,7 +32,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       throw new UnauthorizedException('not found necessary data in token');
     }
 
-    const user: UserDocument | null = await this.usersService.findById(payload.userId);
+    const user: UserModel | null = await this.usersService.findById(payload.userId);
     if (!user) throw new UnauthorizedException('user is not found');
     if (user.banInfo.isBanned) throw new UnauthorizedException('user is banned');
 

@@ -9,7 +9,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Model, Connection, connect } from 'mongoose';
 import { AppConfigModule } from '../../../src/config/app-config.module';
 import { DbConfigService } from '../../../src/config/config-services/db-config.service';
-import { User, UserSchema } from '../../../src/modules/users/schemas/user.schema';
+import { User, UserSchema } from '../../../src/modules/users/repository/mongoose/schemas/user.schema';
 import {
   Post,
   PostDocument,
@@ -29,7 +29,7 @@ import { LikeStatus } from '../../../src/modules/blog-composition/modules/likes/
 import { CreateCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/create-comment.dto';
 import { ViewPublicCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/view-public-comment.dto';
 import { CommentSchema, Comment } from '../../../src/modules/blog-composition/modules/comments/schemas/comment.schema';
-import { CreateUserDto } from '../../../src/modules/users/dto/create-user.dto';
+import { CreateUserDto } from '../../../src/modules/users/dto/input/create-user.dto';
 import { LoginInputModel } from '../../deprecated/models/auth/login/loginInputModel';
 import { UpdateCommentModel } from '../../deprecated/models/comment/updateCommentModel';
 import { CommentType } from '../../deprecated/types/commentTypes';

@@ -5,10 +5,11 @@ import { BanService } from '../../ban/ban.service';
 import { CreateBanByBloggerDto } from '../../ban/dto/input/create-ban-by-blogger.dto';
 import { BloggerBanInfoDocument } from '../../ban/schemas/blogger-ban-info.schema';
 import { UsersService } from '../users.service';
-import { UserDocument } from '../schemas/user.schema';
+import { UserDocument } from '../repository/mongoose/schemas/user.schema';
 import { HttpStatus } from '@nestjs/common';
 import { BlogsService } from '../../blog-composition/modules/blogs/blogs.service';
 import { BlogDocument } from '../../blog-composition/modules/blogs/schemas/blog.schema';
+import UserModel from '../models/user.model';
 
 export class BanUserByBloggerCommand {
   constructor(public authorId: string, public banUserId: string, public createBanByBloggerDto: CreateBanByBloggerDto) {}
@@ -31,7 +32,7 @@ export class BanUserByBloggerUseCase implements ICommandHandler<BanUserByBlogger
       return new CustomErrorDto(HttpStatus.FORBIDDEN, 'can not change status for other blogs');
 
     // 2. Check if user for ban exists
-    const user: UserDocument | null = await this.usersService.findById(command.banUserId);
+    const user: UserModel | null = await this.usersService.findById(command.banUserId);
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user for ban is not found');
 
     // Ban or unban user

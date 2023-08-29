@@ -22,13 +22,14 @@ import { BindBlogWithUserUseCase } from './modules/blog-composition/modules/blog
 import { BanModule } from './modules/ban/ban.module';
 import { BanUserBySaUseCase } from './modules/users/use-cases/ban-user-by-sa.use-case';
 import { BanUserByBloggerUseCase } from './modules/users/use-cases/ban-user-by-blogger.use-case';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 const CommandHandlers = [
   RegisterUserUseCase,
-  BindBlogWithUserUseCase,
-  BanUserBySaUseCase,
-  BanBlogUseCase,
   BanUserByBloggerUseCase,
+  BanUserBySaUseCase,
+  // BindBlogWithUserUseCase,
+  // BanBlogUseCase,
 ];
 
 @Module({
@@ -50,8 +51,21 @@ const CommandHandlers = [
       imports: [AppConfigModule],
       inject: [DbConfigService],
       useFactory: async (dbConfigService: DbConfigService) => ({
-        uri: dbConfigService.dbBaseUri,
-        dbName: dbConfigService.dbName,
+        uri: dbConfigService.mongodbUri,
+        dbName: dbConfigService.mongodbName,
+      }),
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [AppConfigModule],
+      inject: [DbConfigService],
+      useFactory: async (dbConfigService: DbConfigService) => ({
+        type: 'postgres',
+        host: dbConfigService.pgHost,
+        port: dbConfigService.pgPort,
+        username: dbConfigService.pgUsername,
+        password: dbConfigService.pgPassword,
+        database: dbConfigService.pgDbName,
+        ssl: { rejectUnauthorized: false },
       }),
     }),
     UsersModule,
@@ -64,7 +78,7 @@ const CommandHandlers = [
     BloggerModule,
     BanModule,
   ],
-  controllers: [SecurityDevicesController],
+  //controllers: [SecurityDevicesController],
   providers: [
     {
       provide: APP_GUARD,

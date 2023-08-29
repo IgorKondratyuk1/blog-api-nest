@@ -4,16 +4,16 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentsRepository } from './comments.repository';
 import { PostDocument } from '../posts/schemas/post.schema';
 import { PostsRepository } from '../posts/posts.repository';
-import { UserDocument } from '../../../users/schemas/user.schema';
 import { CommentDocument } from './schemas/comment.schema';
 import { CustomErrorDto } from '../../../../common/dto/error';
-import { UsersRepository } from '../../../users/users.repository';
 import { LikeLocation, LikeStatusType } from '../likes/types/like';
 import { LikesService } from '../likes/likes.service';
 import { CommentsMapper } from './utils/comments.mapper';
 import { ViewPublicCommentDto } from './dto/view-public-comment.dto';
 import { BloggerBanInfoRepository } from '../../../ban/blogger-ban-info.repository';
 import { BloggerBanInfoDocument } from '../../../ban/schemas/blogger-ban-info.schema';
+import UserModel from '../../../users/models/user.model';
+import { UsersRepository } from '../../../users/interfaces/users.repository';
 
 @Injectable()
 export class CommentsService {
@@ -41,7 +41,7 @@ export class CommentsService {
     );
     if (banInfo) return new CustomErrorDto(HttpStatus.FORBIDDEN, 'banned user for blog can not create comments');
 
-    const user: UserDocument | null = await this.usersRepository.findById(userId);
+    const user: UserModel | null = await this.usersRepository.findById(userId);
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user is not found');
 
     const comment: CommentDocument | null = await this.commentsRepository.create(

@@ -2,19 +2,19 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
 
-@Schema()
+@Schema({ _id: false })
 export class PasswordRecovery {
-  constructor() {
-    this.recoveryCode = randomUUID();
-    this.expirationDate = add(new Date(), { hours: 1 }).toISOString();
-    this.isUsed = false;
+  constructor(recoveryCode: string | null, expirationDate: Date | null, isUsed: boolean | null) {
+    this.recoveryCode = recoveryCode;
+    this.expirationDate = expirationDate;
+    this.isUsed = isUsed;
   }
 
   @Prop({ type: String })
   recoveryCode: string;
 
-  @Prop({ type: String })
-  expirationDate: string;
+  @Prop({ type: Date })
+  expirationDate: Date;
 
   @Prop({ type: Boolean })
   isUsed: boolean;

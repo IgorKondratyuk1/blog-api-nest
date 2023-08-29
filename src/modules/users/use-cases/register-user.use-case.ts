@@ -1,10 +1,10 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { HttpStatus } from '@nestjs/common';
+import { CreateUserDto } from '../dto/input/create-user.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserDocument } from '../schemas/user.schema';
 import { CustomErrorDto } from '../../../common/dto/error';
-import { UsersRepository } from '../users.repository';
 import { EmailManagerService } from '../../email/email-manager.service';
+import UserModel from '../models/user.model';
+import { UsersRepository } from '../interfaces/users.repository';
 
 export class RegisterUserCommand {
   constructor(public createUserDto: CreateUserDto) {}
@@ -14,9 +14,10 @@ export class RegisterUserCommand {
 export class RegisterUserUseCase implements ICommandHandler<RegisterUserCommand> {
   constructor(private usersRepository: UsersRepository, private emailManagerService: EmailManagerService) {}
 
-  async execute(command: RegisterUserCommand): Promise<UserDocument | CustomErrorDto> {
+  async execute(command: RegisterUserCommand): Promise<UserModel | CustomErrorDto> {
     // 1. Create new user
-    const createdUser: UserDocument | null = await this.usersRepository.create(command.createUserDto);
+    const newUser: UserModel = await UserModel.createInstance(command.createUserDto);
+    const createdUser: UserModel | null = await this.usersRepository.create(newUser);
     if (!createdUser) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
 
     // 2. Try to send password confirmation email
@@ -31,7 +32,7 @@ export class RegisterUserUseCase implements ICommandHandler<RegisterUserCommand>
     }
   }
 
-  private async sendEmailConfirmation(createdUser: UserDocument): Promise<boolean> {
+  private async sendEmailConfirmation(createdUser: UserModel): Promise<boolean> {
     try {
       await this.emailManagerService.sendEmailConfirmationMessage(createdUser);
       return true;

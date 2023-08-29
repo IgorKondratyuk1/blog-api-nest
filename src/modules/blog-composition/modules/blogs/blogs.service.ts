@@ -8,7 +8,7 @@ import { ViewBlogDto } from './dto/view-blog.dto';
 import { CustomErrorDto } from '../../../../common/dto/error';
 import { UsersService } from '../../../users/users.service';
 import { BanUserDto } from '../../../ban/dto/input/ban-user.dto';
-import { UserDocument } from '../../../users/schemas/user.schema';
+import { UserDocument } from '../../../users/repository/mongoose/schemas/user.schema';
 import { BanBlogDto } from './dto/ban-blog.dto';
 
 @Injectable()
