@@ -423,22 +423,21 @@ export class UsersPgRepository extends UsersRepository {
 
   async removeAll(): Promise<boolean> {
     try {
-      // TODO Delete from account, password recovery, ban info
       const deleteUsersQuery = 'DELETE FROM public."user";';
       const resultDeleteUsers = await this.dataSource.query(deleteUsersQuery);
-      console.log(resultDeleteUsers);
+      //console.log(resultDeleteUsers);
 
       const deleteAccountQuery = 'DELETE FROM public."account";';
       const resultDeleteAccount = await this.dataSource.query(deleteAccountQuery);
-      console.log(resultDeleteAccount);
+      //console.log(resultDeleteAccount);
 
       const deleteEmailConfirmationQuery = 'DELETE FROM public."email_confirmation";';
       const resultDeleteEmailConfirmation = await this.dataSource.query(deleteEmailConfirmationQuery);
-      console.log(resultDeleteEmailConfirmation);
+      //console.log(resultDeleteEmailConfirmation);
 
       const deletePasswordRecoveryQuery = 'DELETE FROM public."password_recovery";';
       const resultPasswordRecoveryQuery = await this.dataSource.query(deletePasswordRecoveryQuery);
-      console.log(resultPasswordRecoveryQuery);
+      //console.log(resultPasswordRecoveryQuery);
 
       return true; //result[1] >= 0;
     } catch (e) {

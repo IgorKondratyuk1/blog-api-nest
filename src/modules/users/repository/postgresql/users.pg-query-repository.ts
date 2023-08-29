@@ -18,13 +18,14 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
 
   // All data about user. Only for SA
   async findAll(queryObj: QueryUserDto): Promise<PaginationDto<ViewUserDto>> {
+    console.log(queryObj);
     const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
-    const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const sortValue: string = queryObj.sortDirection.toUpperCase();
     const filters = this.getUsersFilters(queryObj);
 
     const queryTotalCount = 'SELECT count(*) FROM public."user";';
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
-    const totalCount: number = resultTotalCount[0].count;
+    const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
 
     let query =
@@ -39,13 +40,13 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
       'LEFT JOIN public."password_recovery" pr ON u.password_recovery_id = pr.id ' +
       'LEFT JOIN public."sa_user_ban" sb ON u.user_ban_id = sb.id ';
     query += filters;
-    query += 'ORDER BY $1 ';
-    query += 'LIMIT $2 ';
-    query += 'OFFSET $3;';
+    query += ` ORDER BY "${queryObj.sortBy}" ${sortValue}`;
+    query += ' LIMIT $1 ';
+    query += ' OFFSET $2;';
 
     console.log(query);
 
-    const result: dbFullUser[] = await this.dataSource.query(query, [queryObj.sortBy, queryObj.pageSize, skipValue]);
+    const result: dbFullUser[] = await this.dataSource.query(query, [queryObj.pageSize, skipValue]);
 
     const userModels: UserModel[] = result.map((dbUser) => {
       const isBanned = !!dbUser.userBanId;
