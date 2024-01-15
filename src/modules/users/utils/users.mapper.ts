@@ -121,7 +121,7 @@ export class UsersMapper {
       user.accountData.login,
       user.accountData.email,
       user.createdAt ? user.createdAt.toISOString() : null,
-      banInfo,
+      // banInfo,
     );
   }
 

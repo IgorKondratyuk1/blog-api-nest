@@ -1,10 +1,4 @@
-import {
-  ArgumentsHost,
-  BadRequestException,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-} from '@nestjs/common';
+import { ArgumentsHost, BadRequestException, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 import { Response } from 'express';
 import { isArray } from 'class-validator';
 
@@ -20,9 +14,7 @@ export class BadRequestExceptionFilter implements ExceptionFilter {
       const errorResponse = [];
 
       if (isArray(responseBody.message)) {
-        responseBody.message.forEach((m) =>
-          errorResponse.push({ field: m.field, message: m.message }),
-        );
+        responseBody.message.forEach((m) => errorResponse.push({ field: m.field, message: m.message }));
       } else {
         errorResponse.push({ message: responseBody.message });
       }
