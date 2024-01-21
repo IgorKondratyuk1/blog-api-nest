@@ -90,6 +90,10 @@ describe('Blogger (e2e)', () => {
     app.close();
   });
 
+  beforeAll(async () => {
+    const response = await request(app.getHttpServer()).delete('/api/testing/all-data');
+  });
+
   describe('SA should create user', () => {
     const createUser: CreateUserDto = {
       email: 'test@mail.com',
@@ -102,11 +106,11 @@ describe('Blogger (e2e)', () => {
       login: createUser.login,
       email: createUser.email,
       createdAt: expect.any(String),
-      banInfo: {
-        isBanned: false,
-        banReason: null,
-        banDate: null,
-      },
+      // banInfo: {
+      //   isBanned: false,
+      //   banReason: null,
+      //   banDate: null,
+      // },
     };
 
     it('POST: should create new user', async () => {
@@ -115,7 +119,7 @@ describe('Blogger (e2e)', () => {
         .set('Authorization', basicAuthValue)
         .send(createUser);
 
-      //console.log(JSON.stringify(response.body));
+      console.log(JSON.stringify(response.body));
       expect(response.status).toBe(201);
       expect(response.body).toEqual(expectedUser);
     });

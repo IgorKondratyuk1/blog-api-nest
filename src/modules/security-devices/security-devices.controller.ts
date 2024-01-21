@@ -17,6 +17,8 @@ import { CurrentTokenPayload } from '../auth/decorators/current-token-payload.pa
 import { AuthTokenPayloadDto } from '../auth/dto/auth-token-payload.dto';
 import { ViewSecurityDeviceDto } from './dto/view-security-device.dto';
 import { CustomErrorDto } from '../../common/dto/error';
+import { SecurityDeviceMapper } from './utils/security-device.mapper';
+import { SecurityDeviceModel } from './models/security-device.model';
 
 @SkipThrottle()
 @Controller('security/devices')
@@ -26,12 +28,12 @@ export class SecurityDevicesController {
   @UseGuards(JwtRefreshAuthGuard)
   @Get()
   async findAll(@CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
-    const result: ViewSecurityDeviceDto[] | null = await this.securityDevicesService.getAllDeviceSessions(
+    const result: SecurityDeviceModel[] | null = await this.securityDevicesService.getAllDeviceSessions(
       tokenPayload.userId,
     );
 
     if (!result) throw new NotFoundException('device sessions is not found');
-    return result;
+    return result.map(SecurityDeviceMapper.toView);
   }
 
   @UseGuards(JwtRefreshAuthGuard)

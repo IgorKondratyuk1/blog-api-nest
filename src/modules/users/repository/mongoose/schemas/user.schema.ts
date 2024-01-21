@@ -5,7 +5,6 @@ import { EmailConfirmation, EmailConfirmationSchema } from './email-confirmation
 import { PasswordRecovery, PasswordRecoverySchema } from './password-recovery.schema';
 import { BanExtendedInfo, BanExtendedInfoSchema } from '../../../../ban/schemas/ban-extended-info.schema';
 
-// TODO export class User extends Document
 @Schema()
 export class User {
   constructor(
@@ -34,6 +33,7 @@ export class User {
       recoveryCode && emailExpirationDate ? new PasswordRecovery(recoveryCode, emailExpirationDate, isUsed) : null;
   }
 
+  // TODO: maybe delete "_id" if not use
   @Prop({ type: String, required: true })
   _id: string;
 

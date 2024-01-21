@@ -51,7 +51,7 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
 
     const userModels: UserModel[] = result.map((dbUser) => {
       const isBanned = !!dbUser.userBanId;
-      return UsersMapper.toDomainSql(
+      return UsersMapper.toDomainFromSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,

@@ -1,27 +1,26 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CustomErrorDto } from '../../common/dto/error';
 import { EmailManagerService } from '../email/email-manager.service';
-import { SecurityDevicesRepository } from '../security-devices/security-devices.repository';
-import { UsersService } from '../users/users.service';
 import { SecurityDevicesService } from '../security-devices/security-devices.service';
 import { CreateSecurityDeviceDto } from '../security-devices/dto/create-security-device.dto';
-import { SecurityDevice, SecurityDeviceDocument } from '../security-devices/schemas/device.schema';
 import { ExtendedLoginDataDto } from './dto/extended-login-data-dto';
 import { JwtService } from '@nestjs/jwt';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 import { RegistrationEmailResendDto } from './dto/registration-email-resend.dto';
-import { randomUUID } from 'crypto';
 import { PasswordRecoveryDto } from './dto/password-recovery.dto';
 import { AuthTokenPayloadDto } from './dto/auth-token-payload.dto';
 import { SecurityConfigService } from '../../config/config-services/security-config.service';
 import UserModel from '../users/models/user.model';
 import { UsersRepository } from '../users/interfaces/users.repository';
+import { SecurityDeviceModel } from '../security-devices/models/security-device.model';
+import IdGenerator from '../../common/utils/id-generator';
+import { SecurityDevicesRepository } from '../security-devices/interfaces/security-devices.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    //private usersService: UsersService,
     private usersRepository: UsersRepository,
     private securityDevicesRepository: SecurityDevicesRepository,
     private securityDevicesService: SecurityDevicesService,
@@ -72,7 +71,7 @@ export class AuthService {
     );
 
     // 3. Create device session
-    const createdSession: SecurityDevice | null = await this.securityDevicesService.createDeviceSession(
+    const createdSession: SecurityDeviceModel | null = await this.securityDevicesService.createDeviceSession(
       createSecurityDeviceDto,
     );
 
@@ -118,7 +117,7 @@ export class AuthService {
     if (!user) return false;
     if (user.emailConfirmation.isConfirmed) return false;
 
-    await user.setEmailConfirmationCode(randomUUID());
+    user.setEmailConfirmationCode(IdGenerator.generate());
     await this.usersRepository.save(user);
 
     try {
@@ -139,7 +138,9 @@ export class AuthService {
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
 
     // 2. Search user`s device session
-    const deviceSession: SecurityDeviceDocument | null = await this.securityDevicesService.findDeviceSession(deviceId);
+    const deviceSession: SecurityDeviceModel | null = await this.securityDevicesService.findDeviceSessionByDeviceId(
+      deviceId,
+    );
 
     if (!deviceSession) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'device session is not found');
 

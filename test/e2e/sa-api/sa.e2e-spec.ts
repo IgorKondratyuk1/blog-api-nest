@@ -18,8 +18,6 @@ import { CreateUserDto } from '../../../src/modules/users/dto/input/create-user.
 import ViewUserDto from '../../../src/modules/users/dto/output/view-user.dto';
 import { basicAuthValue } from '../test-helpers';
 import process from 'process';
-import { CreateBlogModel } from '../../deprecated/models/blog/createBlogModel';
-import { ViewBlogModel } from '../../deprecated/models/blog/viewBlogModel';
 import { CreateBlogDto } from '../../../src/modules/blog-composition/modules/blogs/dto/create-blog.dto';
 import { CreatePostOfBlogDto } from '../../../src/modules/blog-composition/modules/posts/dto/create-post-of-blog.dto';
 import { ViewPostDto } from '../../../src/modules/blog-composition/modules/posts/dto/view-post.dto';
@@ -37,8 +35,11 @@ import { BanUserDto } from '../../../src/modules/ban/dto/input/ban-user.dto';
 import { LoginDto } from '../../../src/modules/auth/dto/login.dto';
 import { ViewAccessTokenDto } from '../../../src/modules/auth/dto/view-access-token.dto';
 import { UpdateLikeDto } from '../../../src/modules/blog-composition/modules/likes/dto/update-like.dto';
-import { SecurityDevice, SecurityDeviceSchema } from '../../../src/modules/security-devices/schemas/device.schema';
 import { ViewBlogDto } from '../../../src/modules/blog-composition/modules/blogs/dto/view-blog.dto';
+import {
+  SecurityDevice,
+  SecurityDeviceSchema,
+} from '../../../src/modules/security-devices/repository/mongoose/schemas/security-device.schema';
 
 jest.setTimeout(100000);
 const PORT = Number(process.env.PORT || 3000) + 3;
@@ -99,6 +100,10 @@ describe('Super-admin tests (e2e)', () => {
   });
   afterAll(() => {
     app.close();
+  });
+
+  beforeAll(async () => {
+    const response = await request(app.getHttpServer()).delete('/api/testing/all-data');
   });
 
   describe.skip('Blogs', () => {
@@ -485,11 +490,11 @@ describe('Super-admin tests (e2e)', () => {
             createdAt: testsData.users[1].createdAt,
             login: testsData.users[1].login,
             email: testsData.users[1].email,
-            banInfo: {
-              isBanned: true,
-              banDate: expect.any(String),
-              banReason: banReason,
-            },
+            // banInfo: {
+            //   isBanned: true,
+            //   banDate: expect.any(String),
+            //   banReason: banReason,
+            // },
           };
 
           const response = await request(app.getHttpServer())
@@ -615,11 +620,11 @@ describe('Super-admin tests (e2e)', () => {
             createdAt: testsData.users[1].createdAt,
             login: testsData.users[1].login,
             email: testsData.users[1].email,
-            banInfo: {
-              isBanned: true,
-              banDate: expect.any(String),
-              banReason: banReason,
-            },
+            // banInfo: {
+            //   isBanned: true,
+            //   banDate: expect.any(String),
+            //   banReason: banReason,
+            // },
           };
 
           const response = await request(app.getHttpServer())

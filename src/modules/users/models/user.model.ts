@@ -30,18 +30,18 @@ export default class UserModel {
     this.passwordRecovery = passwordRecovery;
   }
 
-  canBeConfirmed(code: string) {
+  public canBeConfirmed(code: string) {
     return (
       this.emailConfirmation.confirmationCode === code && new Date(this.emailConfirmation.expirationDate) > new Date()
     );
   }
 
-  confirm(code: string) {
+  public confirm(code: string) {
     if (this.emailConfirmation.isConfirmed) throw new Error('User is already confirmed');
     if (this.canBeConfirmed(code)) this.emailConfirmation.isConfirmed = true;
   }
 
-  setIsBanned(isBanned: boolean, banReason: string) {
+  public setIsBanned(isBanned: boolean, banReason: string) {
     if (!banReason) throw new Error('Can not ban user without "ban reason"');
     this.banInfo.isBanned = isBanned;
 
@@ -54,17 +54,17 @@ export default class UserModel {
     }
   }
 
-  setEmailConfirmationCode(code: string) {
+  public setEmailConfirmationCode(code: string) {
     if (this.emailConfirmation.isConfirmed) throw new Error('Can not set new confirmation code, if code was confirmed');
     this.emailConfirmation.confirmationCode = code;
   }
 
-  createNewPasswordRecoveryCode() {
+  public createNewPasswordRecoveryCode() {
     const expirationDate = PasswordRecovery.generateNewExpirationDate();
     this.passwordRecovery = new PasswordRecovery(IdGenerator.generate(), expirationDate, false);
   }
 
-  async setPassword(newPassword: string) {
+  public async setPassword(newPassword: string) {
     if (this.passwordRecovery && this.passwordRecovery.isUsed) {
       throw new Error('Password recovery object is not created or already used');
     }
@@ -76,7 +76,7 @@ export default class UserModel {
     this.accountData.passwordHash = await UserModel.generatePasswordHash(newPassword);
   }
 
-  async isPasswordCorrect(password: string) {
+  public async isPasswordCorrect(password: string) {
     return await bcrypt.compare(password, this.accountData.passwordHash);
   }
 

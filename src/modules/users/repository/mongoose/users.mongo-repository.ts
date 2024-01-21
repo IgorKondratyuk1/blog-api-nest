@@ -27,7 +27,7 @@ export class UsersMongoRepository extends UsersRepository {
     try {
       const newUser = new this.userModel(UsersMapper.toMongo(userModel));
       const createdUser = await this.userModel.create(newUser);
-      return UsersMapper.toDomain(createdUser);
+      return UsersMapper.toDomainFromDocument(createdUser);
     } catch (e) {
       console.log(e);
       return null;
@@ -37,7 +37,7 @@ export class UsersMongoRepository extends UsersRepository {
   async findById(id: string): Promise<UserModel | null> {
     try {
       const foundedUser: UserDocument | null = await this.userModel.findOne({ id });
-      return foundedUser ? UsersMapper.toDomain(foundedUser) : null;
+      return foundedUser ? UsersMapper.toDomainFromDocument(foundedUser) : null;
     } catch (e) {
       console.log(e);
       return null;
@@ -50,7 +50,7 @@ export class UsersMongoRepository extends UsersRepository {
         $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
       });
 
-      return foundedUser ? UsersMapper.toDomain(foundedUser) : null;
+      return foundedUser ? UsersMapper.toDomainFromDocument(foundedUser) : null;
     } catch (e) {
       console.log(e);
       return null;
@@ -63,7 +63,7 @@ export class UsersMongoRepository extends UsersRepository {
         'emailConfirmation.confirmationCode': code,
       });
 
-      return foundedUser ? UsersMapper.toDomain(foundedUser) : null;
+      return foundedUser ? UsersMapper.toDomainFromDocument(foundedUser) : null;
     } catch (e) {
       console.log(e);
       return null;
@@ -76,7 +76,7 @@ export class UsersMongoRepository extends UsersRepository {
         'passwordRecovery.recoveryCode': code,
       });
 
-      return foundedUser ? UsersMapper.toDomain(foundedUser) : null;
+      return foundedUser ? UsersMapper.toDomainFromDocument(foundedUser) : null;
     } catch (e) {
       console.log(e);
       return null;

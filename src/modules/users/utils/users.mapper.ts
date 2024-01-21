@@ -11,7 +11,7 @@ import EmailConfirmation from '../models/email-confirmation.model';
 import PasswordRecovery from '../models/password-recovery.model';
 
 export class UsersMapper {
-  public static toDomain(user: User | UserDocument): UserModel {
+  public static toDomainFromDocument(user: User | UserDocument): UserModel {
     const accountData: Account = new Account(
       user.accountData.login,
       user.accountData.email,
@@ -46,7 +46,7 @@ export class UsersMapper {
   }
 
   // TODO refactor
-  public static toDomainSql(
+  public static toDomainFromSql(
     id: string,
     createdAt: Date,
     accountDataLogin: string,

@@ -124,7 +124,7 @@ export class UsersPgRepository extends UsersRepository {
         ]);
 
         const updateUserQuery = 'UPDATE public."user" SET user_ban_id=$1 WHERE id = $2;';
-        const resultUserQuery = await this.dataSource.query(updateUserQuery, [
+        const resultUpdateUserQuery = await this.dataSource.query(updateUserQuery, [
           createdBanInfoId,
           resultGetUserQuery[0].id,
         ]);
@@ -201,8 +201,8 @@ export class UsersPgRepository extends UsersRepository {
 
       // Email confirmation
       const emailConfirmationId = IdGenerator.generate();
-      const emailConfirmationQuery = `INSERT INTO public.email_confirmation(id, confirmation_code, expiration_date, is_confirmed) VALUES ($1, $2, $3, $4);`;
-      await this.dataSource.query(emailConfirmationQuery, [
+      const emailConfirmationInsertQuery = `INSERT INTO public.email_confirmation(id, confirmation_code, expiration_date, is_confirmed) VALUES ($1, $2, $3, $4);`;
+      await this.dataSource.query(emailConfirmationInsertQuery, [
         emailConfirmationId,
         userModel.emailConfirmation.confirmationCode,
         userModel.emailConfirmation.expirationDate.toISOString(),
@@ -249,7 +249,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainSql(
+      return UsersMapper.toDomainFromSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -293,7 +293,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainSql(
+      return UsersMapper.toDomainFromSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -339,7 +339,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainSql(
+      return UsersMapper.toDomainFromSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -387,7 +387,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainSql(
+      return UsersMapper.toDomainFromSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -439,7 +439,7 @@ export class UsersPgRepository extends UsersRepository {
       const resultPasswordRecoveryQuery = await this.dataSource.query(deletePasswordRecoveryQuery);
       //console.log(resultPasswordRecoveryQuery);
 
-      return true; //result[1] >= 0;
+      return true; // TODO result[1] >= 0;
     } catch (e) {
       console.log(e);
       return false;

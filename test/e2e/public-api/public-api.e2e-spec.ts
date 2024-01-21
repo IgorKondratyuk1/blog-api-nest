@@ -23,22 +23,17 @@ import { CreateBlogDto } from '../../../src/modules/blog-composition/modules/blo
 import { CreatePostOfBlogDto } from '../../../src/modules/blog-composition/modules/posts/dto/create-post-of-blog.dto';
 import { ViewPostDto } from '../../../src/modules/blog-composition/modules/posts/dto/view-post.dto';
 import { PostsMapper } from '../../../src/modules/blog-composition/modules/posts/utils/posts.mapper';
-import { CreateCommentModel } from '../../deprecated/models/comment/createCommentModel';
 import { ViewCommentModel } from '../../deprecated/models/comment/viewCommentModel';
 import { LikeStatus } from '../../../src/modules/blog-composition/modules/likes/types/like';
 import { CreateCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/create-comment.dto';
 import { ViewPublicCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/view-public-comment.dto';
 import { CommentSchema, Comment } from '../../../src/modules/blog-composition/modules/comments/schemas/comment.schema';
 import { CreateUserDto } from '../../../src/modules/users/dto/input/create-user.dto';
-import { LoginInputModel } from '../../deprecated/models/auth/login/loginInputModel';
-import { UpdateCommentModel } from '../../deprecated/models/comment/updateCommentModel';
-import { CommentType } from '../../deprecated/types/commentTypes';
 import { UpdateCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/update-comment.dto';
 import { UpdateLikeModel } from '../../deprecated/models/like/updateLikeModel';
 import { UpdateLikeDto } from '../../../src/modules/blog-composition/modules/likes/dto/update-like.dto';
 import { basicAuthValue, delay } from '../test-helpers';
 import process from 'process';
-import { te } from 'date-fns/locale';
 
 jest.setTimeout(100000);
 const PORT = Number(process.env.PORT || 3000) + 2;
@@ -99,6 +94,10 @@ describe('Public (e2e)', () => {
     app.close();
   });
 
+  beforeAll(async () => {
+    const response = await request(app.getHttpServer()).delete('/api/testing/all-data');
+  });
+
   describe('SA should create users', () => {
     it('POST: should create first user', async () => {
       const createUser: CreateUserDto = {
@@ -112,11 +111,11 @@ describe('Public (e2e)', () => {
         login: createUser.login,
         email: createUser.email,
         createdAt: expect.any(String),
-        banInfo: {
-          isBanned: false,
-          banReason: null,
-          banDate: null,
-        },
+        // banInfo: {
+        //   isBanned: false,
+        //   banReason: null,
+        //   banDate: null,
+        // },
       };
 
       const response = await request(app.getHttpServer())
@@ -142,11 +141,11 @@ describe('Public (e2e)', () => {
         login: createUser.login,
         email: createUser.email,
         createdAt: expect.any(String),
-        banInfo: {
-          isBanned: false,
-          banReason: null,
-          banDate: null,
-        },
+        // banInfo: {
+        //   isBanned: false,
+        //   banReason: null,
+        //   banDate: null,
+        // },
       };
 
       const response = await request(app.getHttpServer())

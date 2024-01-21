@@ -1,38 +1,48 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { SecurityDevicesRepository } from './security-devices.repository';
-import { SecurityDevice, SecurityDeviceDocument } from './schemas/device.schema';
 import { CreateSecurityDeviceDto } from './dto/create-security-device.dto';
 import { CustomErrorDto } from '../../common/dto/error';
-import { SecurityDeviceMapper } from './utils/security-device.mapper';
-import { ViewSecurityDeviceDto } from './dto/view-security-device.dto';
 import { SkipThrottle } from '@nestjs/throttler';
+import { SecurityDeviceModel } from './models/security-device.model';
+import { SecurityDevicesRepository } from './interfaces/security-devices.repository';
+import { SecurityConfigService } from '../../config/config-services/security-config.service';
 
 @SkipThrottle()
 @Injectable()
 export class SecurityDevicesService {
-  constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
+  constructor(
+    private securityDevicesRepository: SecurityDevicesRepository,
+    private securityConfigService: SecurityConfigService,
+  ) {}
 
-  async createDeviceSession(createSecurityDeviceDto: CreateSecurityDeviceDto): Promise<SecurityDevice> {
-    const newDeviceSession: SecurityDevice | null = await this.securityDevicesRepository.create(
+  async createDeviceSession(createSecurityDeviceDto: CreateSecurityDeviceDto): Promise<SecurityDeviceModel> {
+    const newDeviceSession: SecurityDeviceModel = SecurityDeviceModel.createInstance(
       createSecurityDeviceDto,
+      this.securityConfigService.expiredDeviceSessionDays,
     );
-    return newDeviceSession;
+
+    const createdDeviceSession: SecurityDeviceModel | null = await this.securityDevicesRepository.create(
+      newDeviceSession,
+    );
+
+    return createdDeviceSession;
   }
 
-  async findDeviceSession(deviceId: string): Promise<SecurityDeviceDocument | null> {
-    const device: SecurityDeviceDocument | null = await this.securityDevicesRepository.findDeviceSession(deviceId);
+  async findDeviceSessionByDeviceId(deviceId: string): Promise<SecurityDeviceModel | null> {
+    const device: SecurityDeviceModel | null = await this.securityDevicesRepository.findDeviceSessionByDeviceId(
+      deviceId,
+    );
     return device;
   }
 
-  async getAllDeviceSessions(userId: string): Promise<ViewSecurityDeviceDto[] | null> {
-    const result: SecurityDeviceDocument[] | null = await this.securityDevicesRepository.findDeviceSessionsByUser(
+  async getAllDeviceSessions(userId: string): Promise<SecurityDeviceModel[] | null> {
+    const result: SecurityDeviceModel[] | null = await this.securityDevicesRepository.findDeviceSessionsByUserId(
       userId,
     );
-    return result.map(SecurityDeviceMapper.toView);
+    return result;
   }
 
   async deleteOtherSessions(userId: string, currentSessionId: string): Promise<boolean> {
-    return await this.securityDevicesRepository.deleteOtherSessions(userId, currentSessionId);
+    return await this.securityDevicesRepository.deleteOtherSessionsExceptCurrent(userId, currentSessionId);
   }
 
   async deleteAllUserSessions(userId: string): Promise<boolean> {
@@ -40,7 +50,7 @@ export class SecurityDevicesService {
   }
 
   async deleteDeviceSession(currentUserId: string, deviceId: string): Promise<boolean | CustomErrorDto> {
-    const deviceSession = await this.securityDevicesRepository.findDeviceSession(deviceId);
+    const deviceSession = await this.securityDevicesRepository.findDeviceSessionByDeviceId(deviceId);
 
     if (!deviceSession) {
       return new CustomErrorDto(HttpStatus.NOT_FOUND, 'session is not found');
