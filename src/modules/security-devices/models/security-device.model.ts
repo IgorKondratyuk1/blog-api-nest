@@ -5,11 +5,11 @@ import IdGenerator from '../../../common/utils/id-generator';
 export class SecurityDeviceModel {
   public id: string;
   public deviceId: string;
-  public createdAt: Date;
   public userId: string;
   public ip: string;
   public title: string;
   public isValid: boolean;
+  public createdAt: Date;
   public lastActiveDate: Date;
 
   constructor(
@@ -24,11 +24,11 @@ export class SecurityDeviceModel {
   ) {
     this.id = id;
     this.deviceId = deviceId;
-    this.createdAt = createdAt;
     this.userId = userId;
     this.ip = ip;
     this.title = title;
     this.isValid = isValid;
+    this.createdAt = createdAt;
     this.lastActiveDate = lastActiveDate;
   }
 
@@ -41,6 +41,7 @@ export class SecurityDeviceModel {
   }
 
   public static createInstance(createBlogDto: CreateSecurityDeviceDto, expiredDeviceSessionDays: number) {
+    debugger;
     const createdAt = new Date();
     const lastActiveDate = this.calculateLastActiveDate(createdAt, expiredDeviceSessionDays);
 

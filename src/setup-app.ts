@@ -12,6 +12,6 @@ export const setupApp = (app: INestApplication) => {
   app.use(cookieParser());
   app.useGlobalPipes(new GlobalValidationPipe());
   app.useGlobalFilters(new BadRequestExceptionFilter());
-  app.useGlobalFilters(new UnauthorizedExceptionFilter());
+  //app.useGlobalFilters(new UnauthorizedExceptionFilter());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 };

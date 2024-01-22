@@ -3,7 +3,9 @@ import { SecurityDevice, SecurityDeviceDocument } from '../repository/mongoose/s
 import { SecurityDeviceModel } from '../models/security-device.model';
 
 export class SecurityDeviceMapper {
-  public static toView(securityDevice: SecurityDevice | SecurityDeviceDocument): ViewSecurityDeviceDto {
+  public static toView(
+    securityDevice: SecurityDevice | SecurityDeviceDocument | SecurityDeviceModel,
+  ): ViewSecurityDeviceDto {
     return new ViewSecurityDeviceDto(
       securityDevice.ip,
       securityDevice.title,

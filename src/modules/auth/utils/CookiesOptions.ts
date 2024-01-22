@@ -3,7 +3,7 @@ export class CookiesOptions {
     return {
       httpOnly: isHttpOnly,
       secure: secure !== 'development',
-      maxAge: maxAge * 1000, //ms from now
+      maxAge: maxAge * 1000, //ms from now TODO cookies time
     };
   }
 }

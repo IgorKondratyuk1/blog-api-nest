@@ -15,6 +15,7 @@ export class SecurityDevice {
     createdAt: Date,
     lastActiveDate: Date,
   ) {
+    this._id = id;
     this.id = id;
     this.deviceId = deviceId;
     this.createdAt = createdAt;
@@ -24,6 +25,9 @@ export class SecurityDevice {
     this.isValid = isValid;
     this.lastActiveDate = lastActiveDate; //add(this.createdAt, { days: expiredDeviceSessionDays });
   }
+
+  @Prop({ type: String, required: true })
+  _id: string;
 
   @Prop({ type: String, required: true })
   id: string;

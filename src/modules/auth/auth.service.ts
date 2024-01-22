@@ -96,16 +96,6 @@ export class AuthService {
       }),
     );
 
-    console.log({
-      secret: this.securityConfigService.jwtSecret,
-      expiresIn: this.securityConfigService.accessTokenExpirationSeconds,
-    });
-
-    console.log({
-      secret: this.securityConfigService.jwtSecret,
-      expiresIn: this.securityConfigService.refreshTokenExpirationSeconds,
-    });
-
     return authTokens;
   }
 
@@ -163,7 +153,8 @@ export class AuthService {
 
     // 4. Update refresh token issued Date
     deviceSession.setLastActiveDate(new Date());
-    await this.securityDevicesRepository.save(deviceSession);
+    const updateResult = await this.securityDevicesRepository.save(deviceSession);
+    if (!updateResult) throw new Error('Session is not updated');
 
     const tokensPayload = {
       userId: deviceSession.userId,

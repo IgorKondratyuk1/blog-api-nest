@@ -16,8 +16,8 @@ export class SecurityDevicesPgRepository extends SecurityDevicesRepository {
     try {
       const updateDeviceQuery =
         'UPDATE public."security" SET ' +
-        'title=$1, device_id=$2, ip=$3, is_valid=$4, created_at=$5, last_active_date=$6, user_id=$7' +
-        'WHERE id=$7';
+        'title=$1, device_id=$2, ip=$3, is_valid=$4, created_at=$5, last_active_date=$6, user_id=$7 ' +
+        'WHERE id=$8';
 
       const resultUpdateDeviceQuery = await this.dataSource.query(updateDeviceQuery, [
         securityDevice.title,
@@ -27,12 +27,13 @@ export class SecurityDevicesPgRepository extends SecurityDevicesRepository {
         securityDevice.createdAt,
         securityDevice.lastActiveDate,
         securityDevice.userId,
+        securityDevice.id,
       ]);
 
       console.log('SecurityDevicesMongoRepository - Save: resultUpdateDeviceQuery');
       console.log(resultUpdateDeviceQuery);
 
-      return true;
+      return resultUpdateDeviceQuery[1] >= 0;
     } catch (e) {
       console.log(e);
       return false;
@@ -42,7 +43,7 @@ export class SecurityDevicesPgRepository extends SecurityDevicesRepository {
   async create(securityDeviceModel: SecurityDeviceModel): Promise<SecurityDeviceModel | null> {
     try {
       const securityDeviceInsertQuery = `INSERT INTO public.security(id, device_id, title, ip, is_valid, created_at, last_active_date, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`;
-      await this.dataSource.query(securityDeviceInsertQuery, [
+      const result = await this.dataSource.query(securityDeviceInsertQuery, [
         securityDeviceModel.id,
         securityDeviceModel.deviceId,
         securityDeviceModel.title,
@@ -53,12 +54,39 @@ export class SecurityDevicesPgRepository extends SecurityDevicesRepository {
         securityDeviceModel.userId,
       ]);
 
-      const createdSecurityDevice: SecurityDeviceModel | null = await this.findDeviceSessionByDeviceId(
-        securityDeviceModel.deviceId,
+      const createdSecurityDevice: SecurityDeviceModel | null = await this.findDeviceSessionById(
+        securityDeviceModel.id,
       );
       console.log('createdSecurityDevice');
       console.log(createdSecurityDevice);
       return createdSecurityDevice;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  }
+
+  async findDeviceSessionById(id: string): Promise<SecurityDeviceModel | null> {
+    try {
+      const findQuery =
+        'SELECT title as "title", device_id as "deviceId", ip, is_valid as "isValid", created_at as "createdAt", last_active_date as "lastActiveDate", user_id as "userId", id as "id" ' +
+        'FROM public.security t WHERE t.id = $1;';
+
+      const result: dbSecurityDevice[] = await this.dataSource.query(findQuery, [id]);
+
+      if (result.length === 0) return null;
+      const dbSecurityDevice = result[0];
+
+      return SecurityDeviceMapper.toDomainFromSql(
+        dbSecurityDevice.id,
+        dbSecurityDevice.deviceId,
+        dbSecurityDevice.createdAt,
+        dbSecurityDevice.userId,
+        dbSecurityDevice.ip,
+        dbSecurityDevice.title,
+        dbSecurityDevice.isValid,
+        dbSecurityDevice.lastActiveDate,
+      );
     } catch (e) {
       console.log(e);
       return null;
@@ -72,10 +100,6 @@ export class SecurityDevicesPgRepository extends SecurityDevicesRepository {
         'FROM public.security t WHERE t.device_id = $1;';
 
       const result: dbSecurityDevice[] = await this.dataSource.query(findQuery, [deviceId]);
-      console.log('result');
-      console.log(result);
-      console.log(deviceId);
-
       if (result.length === 0) return null;
 
       const dbSecurityDevice = result[0];
