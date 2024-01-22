@@ -85,7 +85,7 @@ export class SecurityDevicesMongoRepository extends SecurityDevicesRepository {
     }
   }
 
-  async deleteDeviceSession(deviceId: string): Promise<boolean> {
+  async deleteDeviceSessionByDeviceId(deviceId: string): Promise<boolean> {
     try {
       const result = await this.securityDeviceModel.deleteOne({ deviceId });
       return result.deletedCount === 1;

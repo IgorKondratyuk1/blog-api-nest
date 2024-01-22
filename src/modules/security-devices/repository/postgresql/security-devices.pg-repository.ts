@@ -155,7 +155,7 @@ export class SecurityDevicesPgRepository extends SecurityDevicesRepository {
 
   async deleteOtherSessionsExceptCurrent(userId: string, currentDeviceId: string): Promise<boolean> {
     try {
-      const deleteQuery = 'DELETE FROM public.security t WHERE (t.user_id = $1 AND t.id != $2);';
+      const deleteQuery = 'DELETE FROM public.security t WHERE t.user_id = $1 AND t.device_id != $2;';
       const result = await this.dataSource.query(deleteQuery, [userId, currentDeviceId]);
 
       console.log('deleteOtherSessionsExceptCurrent result');
@@ -183,7 +183,7 @@ export class SecurityDevicesPgRepository extends SecurityDevicesRepository {
     }
   }
 
-  async deleteDeviceSession(deviceId: string): Promise<boolean> {
+  async deleteDeviceSessionByDeviceId(deviceId: string): Promise<boolean> {
     try {
       const deleteQuery = 'DELETE FROM public.security t WHERE t.device_id = $1;';
       const result = await this.dataSource.query(deleteQuery, [deviceId]);

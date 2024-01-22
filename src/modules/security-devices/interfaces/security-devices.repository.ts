@@ -13,7 +13,7 @@ export abstract class SecurityDevicesRepository {
 
   public abstract deleteAllUserSessions(userId: string): Promise<boolean>;
 
-  public abstract deleteDeviceSession(deviceId: string): Promise<boolean>;
+  public abstract deleteDeviceSessionByDeviceId(deviceId: string): Promise<boolean>;
 
   public abstract deleteAllSessions(): Promise<boolean>;
 }

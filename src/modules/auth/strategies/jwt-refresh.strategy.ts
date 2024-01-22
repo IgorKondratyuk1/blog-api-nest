@@ -41,7 +41,6 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     if (!device) throw new UnauthorizedException('device not found');
 
     // 4. Check that token is valid
-    const a = device.lastActiveDate.toISOString();
     if (device.lastActiveDate.toISOString() !== payload.lastActiveDate) {
       throw new UnauthorizedException('activation date is expired');
       return;

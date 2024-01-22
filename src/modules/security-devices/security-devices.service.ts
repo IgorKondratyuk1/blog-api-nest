@@ -60,7 +60,7 @@ export class SecurityDevicesService {
       return new CustomErrorDto(HttpStatus.FORBIDDEN, 'can not delete session of other user');
     }
 
-    const deleteSession = await this.securityDevicesRepository.deleteDeviceSession(deviceId);
+    const deleteSession = await this.securityDevicesRepository.deleteDeviceSessionByDeviceId(deviceId);
     return deleteSession;
   }
 }
