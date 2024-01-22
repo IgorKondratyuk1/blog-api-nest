@@ -23,6 +23,9 @@ export class JwtAccessStrictStrategy extends PassportStrategy(Strategy, 'jwt-acc
   }
 
   async validate(payload: any): Promise<AuthTokenPayloadDto> {
+    console.log('JwtAccessStrictStrategy');
+    console.log(payload);
+
     if (!payload.userId || !payload.deviceId || !payload.lastActiveDate) {
       throw new UnauthorizedException('not found necessary data in token');
     }

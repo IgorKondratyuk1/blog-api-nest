@@ -85,7 +85,7 @@ export class AuthService {
       lastActiveDate: createdSession.lastActiveDate,
     };
 
-    return new AuthTokensDto(
+    const authTokens = new AuthTokensDto(
       this.jwtService.sign(tokensPayload, {
         secret: this.securityConfigService.jwtSecret,
         expiresIn: this.securityConfigService.accessTokenExpirationSeconds,
@@ -95,6 +95,18 @@ export class AuthService {
         expiresIn: this.securityConfigService.refreshTokenExpirationSeconds,
       }),
     );
+
+    console.log({
+      secret: this.securityConfigService.jwtSecret,
+      expiresIn: this.securityConfigService.accessTokenExpirationSeconds,
+    });
+
+    console.log({
+      secret: this.securityConfigService.jwtSecret,
+      expiresIn: this.securityConfigService.refreshTokenExpirationSeconds,
+    });
+
+    return authTokens;
   }
 
   async confirmEmail(registrationConfirmationDto: RegistrationConfirmationDto): Promise<boolean> {

@@ -14,14 +14,14 @@ export class SecurityConfigService {
     const accessTokenExpiration: string = this.configService.get('SECURITY', {
       infer: true,
     }).ACCESS_TOKEN_EXPIRATION_SEC;
-    return accessTokenExpiration ? Number(accessTokenExpiration) : 20;
+    return accessTokenExpiration ? Number(accessTokenExpiration) : 10;
   }
 
   get refreshTokenExpirationSeconds(): number {
     const refreshTokenExpiration: string = this.configService.get('SECURITY', {
       infer: true,
     }).REFRESH_TOKEN_EXPIRATION_SEC;
-    return refreshTokenExpiration ? Number(refreshTokenExpiration) : 50;
+    return refreshTokenExpiration ? Number(refreshTokenExpiration) : 20;
   }
 
   get expiredDeviceSessionDays(): number {
