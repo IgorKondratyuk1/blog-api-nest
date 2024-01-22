@@ -317,8 +317,6 @@ export class UsersPgRepository extends UsersRepository {
 
   async findUserByEmailConfirmationCode(code: string): Promise<UserModel | null> {
     try {
-      //debugger;
-
       const query =
         'SELECT u.id as "userId", u.user_ban_id as "userBanId", u.created_at as "createdAt", ' +
         'ac.id as "accountId", ac.login as "login", ac.email as "email", ac.password_hash as "passwordHash", ' +

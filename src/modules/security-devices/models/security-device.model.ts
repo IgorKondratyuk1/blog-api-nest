@@ -41,7 +41,6 @@ export class SecurityDeviceModel {
   }
 
   public static createInstance(createBlogDto: CreateSecurityDeviceDto, expiredDeviceSessionDays: number) {
-    debugger;
     const createdAt = new Date();
     const lastActiveDate = this.calculateLastActiveDate(createdAt, expiredDeviceSessionDays);
 

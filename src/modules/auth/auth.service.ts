@@ -100,8 +100,6 @@ export class AuthService {
   }
 
   async confirmEmail(registrationConfirmationDto: RegistrationConfirmationDto): Promise<boolean> {
-    debugger;
-
     const code = registrationConfirmationDto.code;
     const user: UserModel | null = await this.usersRepository.findUserByEmailConfirmationCode(code);
 

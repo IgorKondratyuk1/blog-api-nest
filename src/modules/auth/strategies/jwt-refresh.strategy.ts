@@ -24,7 +24,6 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
   }
 
   async validate(payload: any): Promise<AuthTokenPayloadDto> {
-    debugger;
     console.log('JwtRefreshStrategy');
     console.log(payload);
 
