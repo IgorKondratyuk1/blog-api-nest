@@ -62,7 +62,7 @@ const CommandHandlers = [
         username: dbConfigService.pgUsername,
         password: dbConfigService.pgPassword,
         database: dbConfigService.pgDbName,
-        // ssl: { rejectUnauthorized: false },
+        ssl: { rejectUnauthorized: false },
       }),
     }),
     UsersModule,
