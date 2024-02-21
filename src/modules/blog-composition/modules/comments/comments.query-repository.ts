@@ -6,15 +6,17 @@ import { LikeLocation, LikeStatusType } from '../likes/types/like';
 import { CommentsMapper } from './utils/comments.mapper';
 import { ViewPublicCommentDto } from './dto/view-public-comment.dto';
 import { QueryDto } from '../../../../common/dto/query.dto';
-import { Paginator } from '../../../../common/utils/paginator';
+import { PaginationHelper } from '../../../../common/utils/paginationHelper';
 import { PaginationDto } from '../../../../common/dto/pagination';
 import { LikesRepository } from '../likes/likes.repository';
 import { LikesDislikesCountDto } from '../likes/dto/likes-dislikes-count.dto';
-import { BlogsRepository } from '../blogs/blogs.repository';
-import { BlogDocument } from '../blogs/schemas/blog.schema';
+import { BlogDocument } from '../blogs/repository/mongoose/schemas/blog.schema';
 import { ViewBloggerCommentDto } from './dto/view-blogger-comment.dto';
-import { PostsRepository } from '../posts/posts.repository';
-import { PostDocument } from '../posts/schemas/post.schema';
+import { PostDocument } from '../posts/repository/mongoose/schemas/post.schema';
+import { BlogsRepository } from '../blogs/interfaces/blogs.repository';
+import { PostsRepository } from '../posts/interfaces/posts.repository';
+import { PostEntity } from '../posts/entities/post.entity';
+import { BlogEntity } from '../blogs/entities/blog.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -50,8 +52,8 @@ export class CommentsQueryRepository {
     queryObj: QueryDto,
     currentUserId: string = null,
   ): Promise<PaginationDto<ViewPublicCommentDto>> {
-    const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
-    const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
+    const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
     const filters = { postId, isBanned: false };
 
     const foundedComments: Comment[] = await this.commentModel
@@ -83,7 +85,7 @@ export class CommentsQueryRepository {
     );
 
     const totalCount: number = await this.commentModel.countDocuments(filters);
-    const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
+    const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewPublicCommentDto>(
       pagesCount,
@@ -98,10 +100,10 @@ export class CommentsQueryRepository {
     userId: string,
     queryObj: QueryDto,
   ): Promise<PaginationDto<ViewBloggerCommentDto>> {
-    const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
-    const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
+    const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
 
-    const userBlogs: BlogDocument[] = await this.blogsRepository.findByUserId(userId);
+    const userBlogs: BlogEntity[] = await this.blogsRepository.findByUserId(userId);
     const blogIds = userBlogs.map((blog) => blog.id);
 
     const filters = { blogId: { $in: blogIds } };
@@ -124,7 +126,7 @@ export class CommentsQueryRepository {
           comment.id,
         );
 
-        const post: PostDocument | null = await this.postsRepository.findById(comment.postId);
+        const post: PostEntity | null = await this.postsRepository.findById(comment.postId);
         return CommentsMapper.toBloggerView(
           comment,
           post,
@@ -136,7 +138,7 @@ export class CommentsQueryRepository {
     );
 
     const totalCount: number = await this.commentModel.countDocuments(filters);
-    const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
+    const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewBloggerCommentDto>(
       pagesCount,

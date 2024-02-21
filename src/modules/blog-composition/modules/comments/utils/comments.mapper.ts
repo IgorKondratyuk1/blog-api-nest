@@ -3,8 +3,9 @@ import { ViewPublicCommentDto } from '../dto/view-public-comment.dto';
 import { LikeStatus, LikeStatusType } from '../../likes/types/like';
 import { LikesInfo } from '../../likes/dto/likes-info.dto';
 import { ViewBloggerCommentDto } from '../dto/view-blogger-comment.dto';
-import { PostDocument } from '../../posts/schemas/post.schema';
-import { ViewPostInfoDto } from '../../posts/dto/view-post-info.dto';
+import { PostDocument } from '../../posts/repository/mongoose/schemas/post.schema';
+import { ViewPostInfoDto } from '../../posts/models/output/view-post-info.dto';
+import { PostEntity } from '../../posts/entities/post.entity';
 
 export class CommentsMapper {
   public static toPublicView(
@@ -26,7 +27,7 @@ export class CommentsMapper {
 
   public static toBloggerView(
     comment: Comment | CommentDocument,
-    post: PostDocument,
+    post: PostDocument | PostEntity,
     likeStatus: LikeStatusType = LikeStatus.None,
     likesCount = 0,
     dislikesCount = 0,

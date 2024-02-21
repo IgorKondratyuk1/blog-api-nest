@@ -1,5 +1,5 @@
-import ViewUserDto from '../dto/output/view-user.dto';
-import { QueryUserDto } from '../dto/input/query-user.dto';
+import ViewUserDto from '../models/output/view-user.dto';
+import { QueryUserDto } from '../models/input/query-user.dto';
 import { PaginationDto } from '../../../common/dto/pagination';
 
 export abstract class UsersQueryRepository {

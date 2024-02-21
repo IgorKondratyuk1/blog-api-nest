@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { EmailService } from './email.service';
-import { User, UserDocument } from '../users/repository/mongoose/schemas/user.schema';
-import UserModel from '../users/models/user.model';
+import { UserMongoEntity, UserDocument } from '../users/repository/mongoose/schemas/user.schema';
+import UserEntity from '../users/entities/user.entity';
 
 @Injectable()
 export class EmailManagerService {
   constructor(private emailService: EmailService) {}
 
-  async sendEmailConfirmationMessage(user: UserModel | User) {
+  async sendEmailConfirmationMessage(user: UserEntity | UserMongoEntity) {
     const subject = 'Email Confirmation';
     const code = user.emailConfirmation.confirmationCode;
 
@@ -19,7 +19,7 @@ export class EmailManagerService {
     return await this.emailService.sendEmail(user.accountData.email, subject, message);
   }
 
-  async sendPasswordRecoveryMessage(user: UserModel | User) {
+  async sendPasswordRecoveryMessage(user: UserEntity | UserMongoEntity) {
     const subject = 'Password recovery';
     const message = `
            <h1>Password recovery</h1>

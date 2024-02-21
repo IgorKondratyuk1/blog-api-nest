@@ -22,39 +22,34 @@ export class BanUserBySaUseCase implements ICommandHandler<BanUserBySaCommand> {
     private likesService: LikesService,
   ) {}
 
-  async execute(command: BanUserBySaCommand): Promise<boolean | CustomErrorDto> {
+  async execute(command: BanUserBySaCommand): Promise<void> | never {
     // 1. Set ban status to user
-    const banResult: CustomErrorDto | boolean = await this.usersService.setUserBanStatus(
-      command.userId,
-      command.banUserDto,
-    );
-    if (banResult instanceof CustomErrorDto) return banResult;
+    await this.usersService.setUserBanStatus(command.userId, command.banUserDto);
+    //if (banResult instanceof CustomErrorDto) return banResult;
 
     // 2. Delete all
     const deleteResult: boolean = await this.securityDevicesService.deleteAllUserSessions(command.userId);
-    if (!deleteResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not delete user sessions');
+    //if (!deleteResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not delete user sessions');
 
     // 3.1. Ban users posts
     const banPostResult: boolean = await this.postsService.setBanStatusByUserId(
       command.userId,
       command.banUserDto.isBanned,
     );
-    if (!banPostResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not ban user posts');
+    //if (!banPostResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not ban user posts');
 
     // 3.2. Ban users comments
     const banCommentsResult: boolean = await this.commentsService.setBanStatusToUserComments(
       command.userId,
       command.banUserDto.isBanned,
     );
-    if (!banCommentsResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not ban user comments');
+    //if (!banCommentsResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not ban user comments');
 
     // 3.3. Ban users likes
     const banLikesResult: boolean = await this.likesService.setBanStatusToUserLikes(
       command.userId,
       command.banUserDto.isBanned,
     );
-    if (!banLikesResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not ban user likes');
-
-    return true;
+    //if (!banLikesResult) return new CustomErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, 'can not ban user likes');
   }
 }

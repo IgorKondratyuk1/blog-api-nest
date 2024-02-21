@@ -19,7 +19,6 @@ import { LoginDto } from './dto/login.dto';
 import { Response } from 'express';
 import { ExtendedLoginDataDto } from './dto/extended-login-data-dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { UserDocument } from '../users/repository/mongoose/schemas/user.schema';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { CustomErrorDto } from '../../common/dto/error';
 import { ViewAccessTokenDto } from './dto/view-access-token.dto';
@@ -27,7 +26,7 @@ import { AppConfigService } from '../../config/config-services/app-config.servic
 import { SecurityConfigService } from '../../config/config-services/security-config.service';
 import { JwtAccessStrictAuthGuard } from './guards/jwt-access-strict-auth.guard';
 import { UsersMapper } from '../users/utils/users.mapper';
-import { CreateUserDto } from '../users/dto/input/create-user.dto';
+import { CreateUserDto } from '../users/models/input/create-user.dto';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 import { RegistrationEmailResendDto } from './dto/registration-email-resend.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
@@ -40,9 +39,9 @@ import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { CookiesOptions } from './utils/CookiesOptions';
 import { CommandBus } from '@nestjs/cqrs';
-import { RegisterUserCommand } from '../users/use-cases/register-user.use-case';
-import UserModel from '../users/models/user.model';
+import { RegisterUserCommand } from './use-cases/register-user.use-case';
 import { UsersRepository } from '../users/interfaces/users.repository';
+import UserEntity from '../users/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -59,7 +58,7 @@ export class AuthController {
   @UseGuards(JwtAccessStrictAuthGuard)
   @Get('/me')
   async me(@CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
-    const user: UserModel | null = await this.usersService.findById(tokenPayload.userId);
+    const user: UserEntity | null = await this.usersService.findById(tokenPayload.userId);
     if (!user) throw new NotFoundException('user not found');
     return UsersMapper.toViewMe(user);
   }
@@ -96,7 +95,7 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/registration')
   async registration(@Body() createUserDto: CreateUserDto) {
-    const result: UserModel | CustomErrorDto = await this.commandBus.execute(new RegisterUserCommand(createUserDto));
+    const result: UserEntity | CustomErrorDto = await this.commandBus.execute(new RegisterUserCommand(createUserDto));
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
     return;
   }

@@ -13,12 +13,12 @@ import {
 } from '@nestjs/common';
 import { QueryDto } from '../../common/dto/query.dto';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
-import { BlogsQueryRepository } from '../blog-composition/modules/blogs/blogs.query-repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { CustomErrorDto } from '../../common/dto/error';
-import { BanBlogDto } from '../blog-composition/modules/blogs/dto/ban-blog.dto';
+import { BanBlogDto } from '../blog-composition/modules/blogs/models/input/ban-blog.dto';
 import { BanBlogCommand } from '../blog-composition/modules/blogs/use-cases/ban-blog.use-case';
 import { BindBlogWithUserCommand } from '../blog-composition/modules/blogs/use-cases/bind-blog-with-user.use-case';
+import { BlogsQueryRepository } from '../blog-composition/modules/blogs/interfaces/blogs.query-repository';
 
 @Controller('sa/blogs')
 export class SuperAdminBlogsController {

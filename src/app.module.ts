@@ -11,14 +11,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SecurityDevicesModule } from './modules/security-devices/security-devices.module';
 import { EmailModule } from './modules/email/email.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { SecurityDevicesController } from './modules/security-devices/security-devices.controller';
 import { APP_GUARD } from '@nestjs/core';
 import { SecurityConfigService } from './config/config-services/security-config.service';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 import { BloggerModule } from './modules/blogger/blogger.module';
-import { RegisterUserUseCase } from './modules/users/use-cases/register-user.use-case';
-import { BanBlogUseCase } from './modules/blog-composition/modules/blogs/use-cases/ban-blog.use-case';
-import { BindBlogWithUserUseCase } from './modules/blog-composition/modules/blogs/use-cases/bind-blog-with-user.use-case';
+import { RegisterUserUseCase } from './modules/auth/use-cases/register-user.use-case';
 import { BanModule } from './modules/ban/ban.module';
 import { BanUserBySaUseCase } from './modules/users/use-cases/ban-user-by-sa.use-case';
 import { BanUserByBloggerUseCase } from './modules/users/use-cases/ban-user-by-blogger.use-case';
@@ -35,7 +32,7 @@ const CommandHandlers = [
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['.env', '.env.local'],
+      envFilePath: ['.env'],
       load: [getConfiguration],
       isGlobal: true,
     }),
@@ -65,7 +62,7 @@ const CommandHandlers = [
         username: dbConfigService.pgUsername,
         password: dbConfigService.pgPassword,
         database: dbConfigService.pgDbName,
-        ssl: { rejectUnauthorized: false },
+        // ssl: { rejectUnauthorized: false },
       }),
     }),
     UsersModule,
@@ -78,7 +75,6 @@ const CommandHandlers = [
     BloggerModule,
     BanModule,
   ],
-  //controllers: [SecurityDevicesController],
   providers: [
     {
       provide: APP_GUARD,

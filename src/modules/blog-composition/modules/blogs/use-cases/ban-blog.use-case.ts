@@ -1,9 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomErrorDto } from '../../../../../common/dto/error';
-import { BanBlogDto } from '../dto/ban-blog.dto';
+import { BanBlogDto } from '../models/input/ban-blog.dto';
 import { PostsService } from '../../posts/posts.service';
 import { BlogsService } from '../blogs.service';
-import { PostsRepository } from '../../posts/posts.repository';
 import { HttpStatus } from '@nestjs/common';
 
 export class BanBlogCommand {
@@ -12,11 +11,7 @@ export class BanBlogCommand {
 
 @CommandHandler(BanBlogCommand)
 export class BanBlogUseCase implements ICommandHandler<BanBlogCommand> {
-  constructor(
-    private blogsService: BlogsService,
-    private postsService: PostsService,
-    private postsRepository: PostsRepository,
-  ) {}
+  constructor(private blogsService: BlogsService, private postsService: PostsService) {}
 
   async execute(command: BanBlogCommand): Promise<boolean | CustomErrorDto> {
     // 1. Ban blog

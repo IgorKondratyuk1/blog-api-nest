@@ -5,11 +5,10 @@ import { BanService } from '../../ban/ban.service';
 import { CreateBanByBloggerDto } from '../../ban/dto/input/create-ban-by-blogger.dto';
 import { BloggerBanInfoDocument } from '../../ban/schemas/blogger-ban-info.schema';
 import { UsersService } from '../users.service';
-import { UserDocument } from '../repository/mongoose/schemas/user.schema';
 import { HttpStatus } from '@nestjs/common';
 import { BlogsService } from '../../blog-composition/modules/blogs/blogs.service';
-import { BlogDocument } from '../../blog-composition/modules/blogs/schemas/blog.schema';
-import UserModel from '../models/user.model';
+import UserEntity from '../entities/user.entity';
+import { BlogEntity } from '../../blog-composition/modules/blogs/entities/blog.entity';
 
 export class BanUserByBloggerCommand {
   constructor(public authorId: string, public banUserId: string, public createBanByBloggerDto: CreateBanByBloggerDto) {}
@@ -26,14 +25,18 @@ export class BanUserByBloggerUseCase implements ICommandHandler<BanUserByBlogger
 
   async execute(command: BanUserByBloggerCommand): Promise<boolean | CustomErrorDto> {
     // 1. Check if author of ban is blog owner
-    const blog: BlogDocument | null = await this.blogsService.findById(command.createBanByBloggerDto.blogId);
+    const blog: BlogEntity | null = await this.blogsService.findById(command.createBanByBloggerDto.blogId);
+    console.log('1. Check if author of ban is blog owner');
+    console.log(blog);
     if (!blog) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'blog is not found');
     if (blog.userId !== command.authorId)
       return new CustomErrorDto(HttpStatus.FORBIDDEN, 'can not change status for other blogs');
 
     // 2. Check if user for ban exists
-    const user: UserModel | null = await this.usersService.findById(command.banUserId);
+    const user: UserEntity | null = await this.usersService.findById(command.banUserId);
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user for ban is not found');
+    console.log('2. Check if user for ban exists');
+    console.log(user);
 
     // Ban or unban user
     if (command.createBanByBloggerDto.isBanned) {
@@ -52,16 +55,14 @@ export class BanUserByBloggerUseCase implements ICommandHandler<BanUserByBlogger
         command.createBanByBloggerDto,
       );
       if (banResult instanceof CustomErrorDto) return banResult;
-
-      return true;
     } else {
       // If isBanned === False - unban user
       const unbanResult: boolean = await this.banService.removeUserBanForBlogByBlogger(
         command.banUserId,
         command.createBanByBloggerDto.blogId,
       );
-
-      return true;
     }
+
+    return true;
   }
 }

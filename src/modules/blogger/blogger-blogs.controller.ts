@@ -12,22 +12,22 @@ import {
   Put,
   HttpCode,
 } from '@nestjs/common';
-import { CreateBlogDto } from '../blog-composition/modules/blogs/dto/create-blog.dto';
-import { ViewBlogDto } from '../blog-composition/modules/blogs/dto/view-blog.dto';
+import { CreateBlogDto } from '../blog-composition/modules/blogs/models/input/create-blog.dto';
+import { ViewBlogDto } from '../blog-composition/modules/blogs/models/output/view-blog.dto';
 import { CustomErrorDto } from '../../common/dto/error';
-import { CreatePostOfBlogDto } from '../blog-composition/modules/posts/dto/create-post-of-blog.dto';
-import { ViewPostDto } from '../blog-composition/modules/posts/dto/view-post.dto';
 import { QueryDto } from '../../common/dto/query.dto';
-import { UpdateBlogDto } from '../blog-composition/modules/blogs/dto/update-blog.dto';
+import { UpdateBlogDto } from '../blog-composition/modules/blogs/models/input/update-blog.dto';
 import { BlogsService } from '../blog-composition/modules/blogs/blogs.service';
 import { JwtAccessStrictAuthGuard } from '../auth/guards/jwt-access-strict-auth.guard';
 import { CurrentTokenPayload } from '../auth/decorators/current-token-payload.param.decorator';
 import { AuthTokenPayloadDto } from '../auth/dto/auth-token-payload.dto';
-import { BlogsQueryRepository } from '../blog-composition/modules/blogs/blogs.query-repository';
 import { PostsService } from '../blog-composition/modules/posts/posts.service';
-import { PostsQueryRepository } from '../blog-composition/modules/posts/posts.query-repository';
-import { UpdatePostOfBlogDto } from '../blog-composition/modules/posts/dto/update-post-of-blog.dto';
 import { CommentsQueryRepository } from '../blog-composition/modules/comments/comments.query-repository';
+import { CreatePostOfBlogDto } from '../blog-composition/modules/posts/models/input/create-post-of-blog.dto';
+import { ViewPostDto } from '../blog-composition/modules/posts/models/output/view-post.dto';
+import { UpdatePostOfBlogDto } from '../blog-composition/modules/posts/models/input/update-post-of-blog.dto';
+import { BlogsQueryRepository } from '../blog-composition/modules/blogs/interfaces/blogs.query-repository';
+import { PostsQueryRepository } from '../blog-composition/modules/posts/interfaces/posts.query-repository';
 
 @Controller('blogger/blogs')
 export class BloggerBlogsController {
@@ -63,7 +63,7 @@ export class BloggerBlogsController {
 
   @UseGuards(JwtAccessStrictAuthGuard)
   @Post('')
-  async create(@Body() createBlogDto: CreateBlogDto, @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
+  async createBlog(@Body() createBlogDto: CreateBlogDto, @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto) {
     const result: ViewBlogDto | CustomErrorDto = await this.blogsService.create(tokenPayload.userId, createBlogDto);
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
     return result;

@@ -11,11 +11,11 @@ import { RegistrationEmailResendDto } from './dto/registration-email-resend.dto'
 import { PasswordRecoveryDto } from './dto/password-recovery.dto';
 import { AuthTokenPayloadDto } from './dto/auth-token-payload.dto';
 import { SecurityConfigService } from '../../config/config-services/security-config.service';
-import UserModel from '../users/models/user.model';
 import { UsersRepository } from '../users/interfaces/users.repository';
 import { SecurityDeviceModel } from '../security-devices/models/security-device.model';
 import IdGenerator from '../../common/utils/id-generator';
 import { SecurityDevicesRepository } from '../security-devices/interfaces/security-devices.repository';
+import UserEntity from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -29,9 +29,9 @@ export class AuthService {
     private securityConfigService: SecurityConfigService,
   ) {}
 
-  async validateUser(loginOrEmail: string, password: string): Promise<UserModel | null> {
+  async validateUser(loginOrEmail: string, password: string): Promise<UserEntity | null> {
     // 1. Get user
-    const user: UserModel | null = await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
+    const user: UserEntity | null = await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
     if (!user) return null;
 
     const isPasswordCorrect: boolean = await user.isPasswordCorrect(password);
@@ -101,7 +101,7 @@ export class AuthService {
 
   async confirmEmail(registrationConfirmationDto: RegistrationConfirmationDto): Promise<boolean> {
     const code = registrationConfirmationDto.code;
-    const user: UserModel | null = await this.usersRepository.findUserByEmailConfirmationCode(code);
+    const user: UserEntity | null = await this.usersRepository.findUserByEmailConfirmationCode(code);
 
     if (!user) return false;
     if (!user.canBeConfirmed(code)) return false;
@@ -113,7 +113,7 @@ export class AuthService {
 
   async resendConfirmCode(registrationEmailResendDto: RegistrationEmailResendDto): Promise<boolean> {
     const email = registrationEmailResendDto.email;
-    const user: UserModel | null = await this.usersRepository.findUserByLoginOrEmail(email);
+    const user: UserEntity | null = await this.usersRepository.findUserByLoginOrEmail(email);
     if (!user) return false;
     if (user.emailConfirmation.isConfirmed) return false;
 
@@ -134,7 +134,7 @@ export class AuthService {
     if (!deviceId || !userId || !lastActiveDate) return new CustomErrorDto(HttpStatus.BAD_REQUEST, 'wrong token data');
 
     // 1. Search user
-    const user: UserModel | null = await this.usersRepository.findById(userId);
+    const user: UserEntity | null = await this.usersRepository.findById(userId);
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user not found');
 
     // 2. Search user`s device session
@@ -174,7 +174,7 @@ export class AuthService {
 
   async sendRecoveryCode(passwordRecoveryDto: PasswordRecoveryDto): Promise<boolean> {
     const email = passwordRecoveryDto.email;
-    const user: UserModel | null = await this.usersRepository.findUserByLoginOrEmail(email);
+    const user: UserEntity | null = await this.usersRepository.findUserByLoginOrEmail(email);
     if (!user) return false;
 
     await user.createNewPasswordRecoveryCode();
@@ -190,7 +190,7 @@ export class AuthService {
   }
 
   async confirmNewPassword(newPassword: string, recoveryCode: string): Promise<boolean> {
-    const user: UserModel | null = await this.usersRepository.findUserByPasswordConfirmationCode(recoveryCode);
+    const user: UserEntity | null = await this.usersRepository.findUserByPasswordConfirmationCode(recoveryCode);
     console.log(user);
     if (!user) return false;
 

@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { User, UserDocument } from './schemas/user.schema';
+import { UserMongoEntity, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UsersMapper } from '../../utils/users.mapper';
-import UserModel from '../../models/user.model';
 import { UsersRepository } from '../../interfaces/users.repository';
+import UserEntity from '../../entities/user.entity';
 
 @Injectable()
 export class UsersMongoRepository extends UsersRepository {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
+  constructor(@InjectModel(UserMongoEntity.name) private userModel: Model<UserDocument>) {
     super();
   }
 
-  async save(user: UserModel): Promise<boolean> {
+  async save(userEntity: UserEntity): Promise<boolean> {
     try {
-      const savingUser = new this.userModel(UsersMapper.toMongo(user));
-      const result = await this.userModel.findByIdAndUpdate(user.id, savingUser);
+      const savingUser = new this.userModel(UsersMapper.toMongo(userEntity));
+      const result = await this.userModel.findByIdAndUpdate(userEntity.id, savingUser);
       return !!result;
     } catch (e) {
       console.log(e);
@@ -23,9 +23,9 @@ export class UsersMongoRepository extends UsersRepository {
     }
   }
 
-  async create(userModel: UserModel): Promise<UserModel | null> {
+  async create(userEntity: UserEntity): Promise<UserEntity | null> {
     try {
-      const newUser = new this.userModel(UsersMapper.toMongo(userModel));
+      const newUser = new this.userModel(UsersMapper.toMongo(userEntity));
       const createdUser = await this.userModel.create(newUser);
       return UsersMapper.toDomainFromDocument(createdUser);
     } catch (e) {
@@ -34,7 +34,7 @@ export class UsersMongoRepository extends UsersRepository {
     }
   }
 
-  async findById(id: string): Promise<UserModel | null> {
+  async findById(id: string): Promise<UserEntity | null> {
     try {
       const foundedUser: UserDocument | null = await this.userModel.findOne({ id });
       return foundedUser ? UsersMapper.toDomainFromDocument(foundedUser) : null;
@@ -44,7 +44,7 @@ export class UsersMongoRepository extends UsersRepository {
     }
   }
 
-  async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserModel | null> {
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserEntity | null> {
     try {
       const foundedUser: UserDocument | null = await this.userModel.findOne({
         $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
@@ -57,7 +57,7 @@ export class UsersMongoRepository extends UsersRepository {
     }
   }
 
-  async findUserByEmailConfirmationCode(code: string): Promise<UserModel | null> {
+  async findUserByEmailConfirmationCode(code: string): Promise<UserEntity | null> {
     try {
       const foundedUser: UserDocument | null = await this.userModel.findOne({
         'emailConfirmation.confirmationCode': code,
@@ -70,7 +70,7 @@ export class UsersMongoRepository extends UsersRepository {
     }
   }
 
-  async findUserByPasswordConfirmationCode(code: string): Promise<UserModel | null> {
+  async findUserByPasswordConfirmationCode(code: string): Promise<UserEntity | null> {
     try {
       const foundedUser: UserDocument | null = await this.userModel.findOne({
         'passwordRecovery.recoveryCode': code,

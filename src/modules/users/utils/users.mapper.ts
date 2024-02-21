@@ -1,18 +1,18 @@
-import ViewUserDto from '../dto/output/view-user.dto';
-import { User, UserDocument } from '../repository/mongoose/schemas/user.schema';
-import { ViewMeDto } from '../dto/output/view-me.dto';
+import ViewUserDto from '../models/output/view-user.dto';
+import { UserMongoEntity, UserDocument } from '../repository/mongoose/schemas/user.schema';
+import { ViewMeDto } from '../models/output/view-me.dto';
 import { BanMapper } from '../../ban/utils/ban-mapper';
-import ViewUserInfoDto from '../dto/output/view-user-info.dto';
+import ViewUserInfoDto from '../models/output/view-user-info.dto';
 import { BloggerBanInfo } from '../../ban/schemas/blogger-ban-info.schema';
-import UserModel from '../models/user.model';
-import Account from '../models/account.model';
 import SaUserBanInfo from '../../ban/models/sa-user-ban.info';
-import EmailConfirmation from '../models/email-confirmation.model';
-import PasswordRecovery from '../models/password-recovery.model';
+import AccountEntity from '../entities/account.entity';
+import EmailConfirmationEntity from '../entities/email-confirmation.entity';
+import PasswordRecoveryEntity from '../entities/password-recovery.entity';
+import UserEntity from '../entities/user.entity';
 
 export class UsersMapper {
-  public static toDomainFromDocument(user: User | UserDocument): UserModel {
-    const accountData: Account = new Account(
+  public static toDomainFromDocument(user: UserMongoEntity | UserDocument): UserEntity {
+    const accountData: AccountEntity = new AccountEntity(
       user.accountData.login,
       user.accountData.email,
       user.accountData.passwordHash,
@@ -24,16 +24,16 @@ export class UsersMapper {
       user.banInfo.banDate,
       user.banInfo.banReason,
     );
-    const emailConfirmation: EmailConfirmation = new EmailConfirmation(
+    const emailConfirmation: EmailConfirmationEntity = new EmailConfirmationEntity(
       user.emailConfirmation.confirmationCode,
       user.emailConfirmation.expirationDate,
       user.emailConfirmation.isConfirmed,
     );
 
-    let passwordRecovery: PasswordRecovery | null;
+    let passwordRecovery: PasswordRecoveryEntity | null;
 
-    if (passwordRecovery) {
-      passwordRecovery = new PasswordRecovery(
+    if (user.passwordRecovery) {
+      passwordRecovery = new PasswordRecoveryEntity(
         user.passwordRecovery.recoveryCode,
         user.passwordRecovery.expirationDate,
         user.passwordRecovery.isUsed,
@@ -42,11 +42,11 @@ export class UsersMapper {
       passwordRecovery = null;
     }
 
-    return new UserModel(user.id, user.createdAt, accountData, banInfo, emailConfirmation, passwordRecovery);
+    return new UserEntity(user.id, user.createdAt, accountData, banInfo, emailConfirmation, passwordRecovery);
   }
 
   // TODO refactor
-  public static toDomainFromSql(
+  public static toDomainFromPlainSql(
     id: string,
     createdAt: Date,
     accountDataLogin: string,
@@ -61,20 +61,25 @@ export class UsersMapper {
     passwordRecoveryRecoveryCode: string | null,
     passwordRecoveryExpirationDate: Date | null,
     passwordRecoveryIsUsed: boolean | null,
-  ): UserModel {
-    const accountData: Account = new Account(accountDataLogin, accountDataEmail, accountDataPasswordHash, createdAt);
+  ): UserEntity {
+    const accountData: AccountEntity = new AccountEntity(
+      accountDataLogin,
+      accountDataEmail,
+      accountDataPasswordHash,
+      createdAt,
+    );
 
     const banInfo: SaUserBanInfo = new SaUserBanInfo(banInfoIsBanned, banInfoBanDate, banInfoBanReason);
-    const emailConfirmation: EmailConfirmation = new EmailConfirmation(
+    const emailConfirmation: EmailConfirmationEntity = new EmailConfirmationEntity(
       emailConfirmationConfirmationCode,
       emailConfirmationExpirationDate,
       emailConfirmationIsConfirmed,
     );
 
-    let passwordRecovery: PasswordRecovery | null;
+    let passwordRecovery: PasswordRecoveryEntity | null;
 
     if (passwordRecoveryRecoveryCode) {
-      passwordRecovery = new PasswordRecovery(
+      passwordRecovery = new PasswordRecoveryEntity(
         passwordRecoveryRecoveryCode,
         passwordRecoveryExpirationDate,
         passwordRecoveryIsUsed,
@@ -83,15 +88,15 @@ export class UsersMapper {
       passwordRecovery = null;
     }
 
-    return new UserModel(id, createdAt, accountData, banInfo, emailConfirmation, passwordRecovery);
+    return new UserEntity(id, createdAt, accountData, banInfo, emailConfirmation, passwordRecovery);
   }
 
-  public static toMongo(user: UserModel): User {
+  public static toMongo(user: UserEntity): UserMongoEntity {
     const recoveryCode = user.passwordRecovery ? user.passwordRecovery.recoveryCode : null;
     const isUsed = user.passwordRecovery ? user.passwordRecovery.isUsed : null;
     const expirationDate = user.passwordRecovery ? user.passwordRecovery.expirationDate : null;
 
-    return new User(
+    return new UserMongoEntity(
       user.id,
       user.accountData.login,
       user.accountData.email,
@@ -109,7 +114,7 @@ export class UsersMapper {
     );
   }
 
-  public static toView(user: UserModel | User): ViewUserDto {
+  public static toView(user: UserEntity | UserMongoEntity): ViewUserDto {
     const banInfo = BanMapper.toBanExtendedInfoView(
       user.banInfo.isBanned,
       user.banInfo.banReason,
@@ -131,7 +136,7 @@ export class UsersMapper {
     return new ViewUserInfoDto(bloggerBanInfo.userId, bloggerBanInfo.userLogin, banInfo);
   }
 
-  public static toViewMe(user: UserModel): ViewMeDto {
+  public static toViewMe(user: UserMongoEntity | UserEntity): ViewMeDto {
     return new ViewMeDto(user.id, user.accountData.login, user.accountData.email);
   }
 }

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { UserMongoEntity, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
-import ViewUserDto from '../../dto/output/view-user.dto';
+import ViewUserDto from '../../models/output/view-user.dto';
 import { UsersMapper } from '../../utils/users.mapper';
-import { QueryUserDto } from '../../dto/input/query-user.dto';
-import { Paginator } from '../../../../common/utils/paginator';
+import { QueryUserDto } from '../../models/input/query-user.dto';
+import { PaginationHelper } from '../../../../common/utils/paginationHelper';
 import { PaginationDto } from '../../../../common/dto/pagination';
-import { UsersPaginator } from '../../utils/users.pagination';
+import { UsersPaginationHelper } from '../../utils/users.pagination';
 import { UsersQueryRepository } from '../../interfaces/users.query-repository';
 
 export type UsersFilterType = {
@@ -20,7 +20,7 @@ export type UsersFilterType = {
 
 @Injectable()
 export class UsersMongoQueryRepository extends UsersQueryRepository {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
+  constructor(@InjectModel(UserMongoEntity.name) private userModel: Model<UserDocument>) {
     super();
   }
 
@@ -33,8 +33,8 @@ export class UsersMongoQueryRepository extends UsersQueryRepository {
 
   // All data about user. Only for SA
   async findAll(queryObj: QueryUserDto): Promise<PaginationDto<ViewUserDto>> {
-    const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
-    const sortValue: 1 | -1 = Paginator.getSortValue(queryObj.sortDirection);
+    const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
+    const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
     const filters = this.getUsersFilters(queryObj);
 
     const foundedUsers: UserDocument[] = await this.userModel
@@ -46,7 +46,7 @@ export class UsersMongoQueryRepository extends UsersQueryRepository {
 
     const usersViewModels: ViewUserDto[] = foundedUsers.map(UsersMapper.toView);
     const totalCount: number = await this.userModel.countDocuments(filters);
-    const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
+    const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewUserDto>(
       pagesCount,
@@ -58,7 +58,7 @@ export class UsersMongoQueryRepository extends UsersQueryRepository {
   }
 
   public getUsersFilters = (queryObj: QueryUserDto): UsersFilterType => {
-    const banStatus: boolean | null = UsersPaginator.getBanStatus(queryObj.banStatus);
+    const banStatus: boolean | null = UsersPaginationHelper.getBanStatus(queryObj.banStatus);
 
     return {
       ...(banStatus !== null && { 'banInfo.isBanned': banStatus }),

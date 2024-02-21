@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import UserModel from '../../models/user.model';
 import { UsersRepository } from '../../interfaces/users.repository';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -7,8 +6,9 @@ import IdGenerator from '../../../../common/utils/id-generator';
 import { UsersMapper } from '../../utils/users.mapper';
 import { dbFullUser, dbUser } from './types/user';
 import SaUserBanInfo from '../../../ban/models/sa-user-ban.info';
-import EmailConfirmation from '../../models/email-confirmation.model';
-import PasswordRecovery from '../../models/password-recovery.model';
+import UserEntity from '../../entities/user.entity';
+import EmailConfirmationEntity from '../../entities/email-confirmation.entity';
+import PasswordRecoveryEntity from '../../entities/password-recovery.entity';
 
 @Injectable()
 export class UsersPgRepository extends UsersRepository {
@@ -16,7 +16,7 @@ export class UsersPgRepository extends UsersRepository {
     super();
   }
 
-  async save(user: UserModel): Promise<boolean> {
+  async save(user: UserEntity): Promise<boolean> {
     try {
       const getUserQuery =
         'SELECT id, u.created_at as "createdAt", u.account_id as "accountId", u.user_ban_id as "userBanId", ' +
@@ -71,7 +71,10 @@ export class UsersPgRepository extends UsersRepository {
     }
   }
 
-  async saveEmailConfirmation(resultGetUserQuery: dbUser[], emailConfirmation: EmailConfirmation): Promise<boolean> {
+  async saveEmailConfirmation(
+    resultGetUserQuery: dbUser[],
+    emailConfirmation: EmailConfirmationEntity,
+  ): Promise<boolean> {
     try {
       // 1. Is no emailConfirmationId in DB but get new status confirmationCode exists - create EmailConfirmationId
       if (!resultGetUserQuery[0].emailConfirmationId && emailConfirmation.confirmationCode) {
@@ -146,7 +149,7 @@ export class UsersPgRepository extends UsersRepository {
     }
   }
 
-  async savePasswordRecovery(resultGetUserQuery: dbUser[], passwordRecovery: PasswordRecovery): Promise<boolean> {
+  async savePasswordRecovery(resultGetUserQuery: dbUser[], passwordRecovery: PasswordRecoveryEntity): Promise<boolean> {
     try {
       // 1. Is no passwordRecoveryId in DB but get new status confirmationCode exists - create PasswordRecovery
       if (!resultGetUserQuery[0].passwordRecoveryId && passwordRecovery) {
@@ -186,7 +189,7 @@ export class UsersPgRepository extends UsersRepository {
     }
   }
 
-  async create(userModel: UserModel): Promise<UserModel | null> {
+  async create(userModel: UserEntity): Promise<UserEntity | null> {
     try {
       // Account
       const accountId = IdGenerator.generate();
@@ -219,7 +222,7 @@ export class UsersPgRepository extends UsersRepository {
         userModel.createdAt.toISOString(),
       ]);
 
-      const createdUser: UserModel | null = await this.findById(userModel.id);
+      const createdUser: UserEntity | null = await this.findById(userModel.id);
       return createdUser;
     } catch (e) {
       console.log(e);
@@ -227,7 +230,7 @@ export class UsersPgRepository extends UsersRepository {
     }
   }
 
-  async findById(id: string): Promise<UserModel | null> {
+  async findById(id: string): Promise<UserEntity | null> {
     try {
       const query =
         'SELECT u.id as "userId", u.user_ban_id as "userBanId", u.created_at as "createdAt", ' +
@@ -249,7 +252,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainFromSql(
+      return UsersMapper.toDomainFromPlainSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -271,7 +274,7 @@ export class UsersPgRepository extends UsersRepository {
     }
   }
 
-  async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserModel | null> {
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserEntity | null> {
     try {
       const query =
         'SELECT u.id as "userId", u.user_ban_id as "userBanId", u.created_at as "createdAt", ' +
@@ -293,7 +296,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainFromSql(
+      return UsersMapper.toDomainFromPlainSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -315,7 +318,7 @@ export class UsersPgRepository extends UsersRepository {
     }
   }
 
-  async findUserByEmailConfirmationCode(code: string): Promise<UserModel | null> {
+  async findUserByEmailConfirmationCode(code: string): Promise<UserEntity | null> {
     try {
       const query =
         'SELECT u.id as "userId", u.user_ban_id as "userBanId", u.created_at as "createdAt", ' +
@@ -337,7 +340,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainFromSql(
+      return UsersMapper.toDomainFromPlainSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -360,7 +363,7 @@ export class UsersPgRepository extends UsersRepository {
     }
   }
 
-  async findUserByPasswordConfirmationCode(code: string): Promise<UserModel | null> {
+  async findUserByPasswordConfirmationCode(code: string): Promise<UserEntity | null> {
     try {
       const query =
         'SELECT u.id as "userId", u.user_ban_id as "userBanId", u.created_at as "createdAt", ' +
@@ -385,7 +388,7 @@ export class UsersPgRepository extends UsersRepository {
       const isBanned = !!dbUser.userBanId;
 
       console.log(dbUser);
-      return UsersMapper.toDomainFromSql(
+      return UsersMapper.toDomainFromPlainSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,

@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import ViewUserDto from '../../dto/output/view-user.dto';
-import { QueryUserDto } from '../../dto/input/query-user.dto';
+import ViewUserDto from '../../models/output/view-user.dto';
+import { QueryUserDto } from '../../models/input/query-user.dto';
 import { PaginationDto } from '../../../../common/dto/pagination';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UsersQueryRepository } from '../../interfaces/users.query-repository';
 import { UsersMapper } from '../../utils/users.mapper';
-import { Paginator } from '../../../../common/utils/paginator';
+import { PaginationHelper } from '../../../../common/utils/paginationHelper';
 import { dbFullUser } from './types/user';
-import UserModel from '../../models/user.model';
+import UserEntity from '../../entities/user.entity';
 
 @Injectable()
 export class UsersPgQueryRepository extends UsersQueryRepository {
@@ -19,7 +19,7 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
   // All data about user. Only for SA
   async findAll(queryObj: QueryUserDto): Promise<PaginationDto<ViewUserDto>> {
     console.log(queryObj);
-    const skipValue: number = Paginator.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
+    const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
     const filters = this.getUsersFilters(queryObj);
 
@@ -27,7 +27,7 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
     console.log(queryTotalCount);
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
     const totalCount = Number(resultTotalCount[0].count);
-    const pagesCount = Paginator.getPagesCount(totalCount, queryObj.pageSize);
+    const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
     let query =
       'SELECT u.id as "userId", u.user_ban_id as "userBanId", u.created_at as "createdAt", ' +
@@ -49,9 +49,9 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
 
     const result: dbFullUser[] = await this.dataSource.query(query, [queryObj.pageSize, skipValue]);
 
-    const userModels: UserModel[] = result.map((dbUser) => {
+    const userEntities: UserEntity[] = result.map((dbUser) => {
       const isBanned = !!dbUser.userBanId;
-      return UsersMapper.toDomainFromSql(
+      return UsersMapper.toDomainFromPlainSql(
         dbUser.userId,
         dbUser.createdAt,
         dbUser.login,
@@ -69,7 +69,7 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
       );
     });
 
-    const usersViewModels = userModels.map((user) => {
+    const usersViewModels = userEntities.map((user) => {
       return UsersMapper.toView(user);
     });
 
@@ -80,8 +80,6 @@ export class UsersPgQueryRepository extends UsersQueryRepository {
       totalCount,
       usersViewModels,
     );
-
-    return new PaginationDto<ViewUserDto>(null, 0, 0, 0, null);
   }
 
   getUsersFilters = (queryObj: QueryUserDto): string => {

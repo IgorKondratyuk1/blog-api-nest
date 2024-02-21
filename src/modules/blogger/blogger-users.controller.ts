@@ -18,11 +18,11 @@ import { CustomErrorDto } from '../../common/dto/error';
 import { CreateBanByBloggerDto } from '../ban/dto/input/create-ban-by-blogger.dto';
 import { BanService } from '../ban/ban.service';
 import { BanQueryRepository } from '../ban/ban.query-repository';
-import { QueryBannedUserDto } from '../users/dto/input/query-banned-user.dto';
+import { QueryBannedUserDto } from '../users/models/input/query-banned-user.dto';
 import { BanUserByBloggerCommand } from '../users/use-cases/ban-user-by-blogger.use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsService } from '../blog-composition/modules/blogs/blogs.service';
-import { BlogDocument } from '../blog-composition/modules/blogs/schemas/blog.schema';
+import { BlogEntity } from '../blog-composition/modules/blogs/entities/blog.entity';
 
 @Controller('blogger/users')
 export class BloggerUsersController {
@@ -58,7 +58,7 @@ export class BloggerUsersController {
     @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto,
   ) {
     // TODO change to validation pipe
-    const blog: BlogDocument | null = await this.blogsService.findById(blogId);
+    const blog: BlogEntity | null = await this.blogsService.findById(blogId);
     if (!blog) throw new NotFoundException('blog is not found');
     if (blog.userId !== tokenPayload.userId) throw new ForbiddenException('can not get data of other user');
 

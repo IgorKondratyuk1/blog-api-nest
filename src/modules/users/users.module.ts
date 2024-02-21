@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './repository/mongoose/schemas/user.schema';
+import { UserMongoEntity, UserSchema } from './repository/mongoose/schemas/user.schema';
 import { UsersMongoQueryRepository } from './repository/mongoose/users.mongo-query-repository';
 import { UserExistsRule } from './validators/user-exists.validator';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -13,7 +13,7 @@ import { UsersQueryRepository } from './interfaces/users.query-repository';
 import { UsersPgQueryRepository } from './repository/postgresql/users.pg-query-repository';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), CqrsModule],
+  imports: [MongooseModule.forFeature([{ name: UserMongoEntity.name, schema: UserSchema }]), CqrsModule],
   providers: [
     UsersService,
     UsersMongoRepository,
@@ -28,6 +28,7 @@ import { UsersPgQueryRepository } from './repository/postgresql/users.pg-query-r
         postgresqlUsersRepository: UsersPgRepository,
         mongooseUsersRepository: UsersMongoRepository,
       ) => {
+        console.log('UsersModule DbType:');
         console.log(dbConfigService.dbType);
         return dbConfigService.dbType === 'sql' ? postgresqlUsersRepository : mongooseUsersRepository;
       },
@@ -46,14 +47,6 @@ import { UsersPgQueryRepository } from './repository/postgresql/users.pg-query-r
       inject: [DbConfigService, UsersPgQueryRepository, UsersMongoQueryRepository],
     },
   ],
-  exports: [
-    UsersService,
-    UsersRepository,
-    UsersQueryRepository,
-    // UsersMongoRepository,
-    // UsersPgRepository,
-    // UsersPgQueryRepository,
-    // UsersMongoQueryRepository,
-  ],
+  exports: [UsersService, UsersRepository, UsersQueryRepository],
 })
 export class UsersModule {}

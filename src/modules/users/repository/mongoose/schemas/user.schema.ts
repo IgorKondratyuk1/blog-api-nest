@@ -6,7 +6,7 @@ import { PasswordRecovery, PasswordRecoverySchema } from './password-recovery.sc
 import { BanExtendedInfo, BanExtendedInfoSchema } from '../../../../ban/schemas/ban-extended-info.schema';
 
 @Schema()
-export class User {
+export class UserMongoEntity {
   constructor(
     id: string,
     login: string,
@@ -30,7 +30,7 @@ export class User {
     this.emailConfirmation = new EmailConfirmation(confirmationCode, emailExpirationDate, isConfirmed);
     this.banInfo = new BanExtendedInfo(isBanned, banDate, banReason);
     this.passwordRecovery =
-      recoveryCode && emailExpirationDate ? new PasswordRecovery(recoveryCode, emailExpirationDate, isUsed) : null;
+      recoveryCode && emailExpirationDate ? new PasswordRecovery(recoveryCode, passwordExpirationDate, isUsed) : null;
   }
 
   // TODO: maybe delete "_id" if not use
@@ -56,6 +56,5 @@ export class User {
   createdAt: Date;
 }
 
-export type UserDocument = HydratedDocument<User>;
-
-export const UserSchema = SchemaFactory.createForClass(User);
+export type UserDocument = HydratedDocument<UserMongoEntity>;
+export const UserSchema = SchemaFactory.createForClass(UserMongoEntity);

@@ -2,8 +2,6 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentsRepository } from './comments.repository';
-import { PostDocument } from '../posts/schemas/post.schema';
-import { PostsRepository } from '../posts/posts.repository';
 import { CommentDocument } from './schemas/comment.schema';
 import { CustomErrorDto } from '../../../../common/dto/error';
 import { LikeLocation, LikeStatusType } from '../likes/types/like';
@@ -12,8 +10,10 @@ import { CommentsMapper } from './utils/comments.mapper';
 import { ViewPublicCommentDto } from './dto/view-public-comment.dto';
 import { BloggerBanInfoRepository } from '../../../ban/blogger-ban-info.repository';
 import { BloggerBanInfoDocument } from '../../../ban/schemas/blogger-ban-info.schema';
-import UserModel from '../../../users/models/user.model';
 import { UsersRepository } from '../../../users/interfaces/users.repository';
+import UserEntity from '../../../users/entities/user.entity';
+import { PostEntity } from '../posts/entities/post.entity';
+import { PostsRepository } from '../posts/interfaces/posts.repository';
 
 @Injectable()
 export class CommentsService {
@@ -30,7 +30,7 @@ export class CommentsService {
     postId: string,
     userId: string,
   ): Promise<ViewPublicCommentDto | CustomErrorDto> {
-    const post: PostDocument | null = await this.postsRepository.findById(postId);
+    const post: PostEntity | null = await this.postsRepository.findById(postId);
     if (!post) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'post is not found');
 
     // TODO to Use-case
@@ -41,7 +41,7 @@ export class CommentsService {
     );
     if (banInfo) return new CustomErrorDto(HttpStatus.FORBIDDEN, 'banned user for blog can not create comments');
 
-    const user: UserModel | null = await this.usersRepository.findById(userId);
+    const user: UserEntity | null = await this.usersRepository.findById(userId);
     if (!user) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'user is not found');
 
     const comment: CommentDocument | null = await this.commentsRepository.create(

@@ -1,32 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Put,
-  HttpCode,
-  Query,
-  NotFoundException,
-  UseGuards,
-  HttpException,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, NotFoundException, UseGuards } from '@nestjs/common';
 import { BlogsService } from './blogs.service';
-import { CreateBlogDto } from './dto/create-blog.dto';
-import { BlogsQueryRepository } from './blogs.query-repository';
 import { PostsService } from '../posts/posts.service';
-import { PostsQueryRepository } from '../posts/posts.query-repository';
 import { QueryDto } from '../../../../common/dto/query.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
-import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 import { JwtAccessSoftAuthGuard } from '../../../auth/guards/jwt-access-soft-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user-id.param.decorator';
-import { CustomErrorDto } from '../../../../common/dto/error';
-import { ViewPostDto } from '../posts/dto/view-post.dto';
-import { ViewBlogDto } from './dto/view-blog.dto';
-import { CreatePostOfBlogDto } from '../posts/dto/create-post-of-blog.dto';
 import { SkipThrottle } from '@nestjs/throttler';
+import { BlogsQueryRepository } from './interfaces/blogs.query-repository';
+import { PostsQueryRepository } from '../posts/interfaces/posts.query-repository';
 
 @SkipThrottle()
 @Controller('blogs')
@@ -74,7 +54,7 @@ export class BlogsController {
 
   @Get()
   findAll(@Query() query: QueryDto) {
-    return this.blogsQueryRepository.findBlogs(query);
+    return this.blogsQueryRepository.findAll(query);
   }
 
   @UseGuards(JwtAccessSoftAuthGuard)

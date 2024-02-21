@@ -5,8 +5,8 @@ import { SecurityDevicesService } from '../../security-devices/security-devices.
 import { UsersService } from '../../users/users.service';
 import { AuthTokenPayloadDto } from '../dto/auth-token-payload.dto';
 import { SecurityConfigService } from '../../../config/config-services/security-config.service';
-import UserModel from '../../users/models/user.model';
 import { SecurityDeviceModel } from '../../security-devices/models/security-device.model';
+import UserEntity from '../../users/entities/user.entity';
 
 @Injectable()
 export class JwtAccessStrictStrategy extends PassportStrategy(Strategy, 'jwt-access-strict') {
@@ -30,7 +30,7 @@ export class JwtAccessStrictStrategy extends PassportStrategy(Strategy, 'jwt-acc
       throw new UnauthorizedException('not found necessary data in token');
     }
 
-    const user: UserModel | null = await this.usersService.findById(payload.userId);
+    const user: UserEntity | null = await this.usersService.findById(payload.userId);
     if (!user) throw new UnauthorizedException('user not found');
     if (user.banInfo.isBanned) throw new UnauthorizedException('user is banned');
 
