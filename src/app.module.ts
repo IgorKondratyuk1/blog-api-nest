@@ -19,7 +19,8 @@ import { RegisterUserUseCase } from './modules/auth/use-cases/register-user.use-
 import { BanModule } from './modules/ban/ban.module';
 import { BanUserBySaUseCase } from './modules/users/use-cases/ban-user-by-sa.use-case';
 import { BanUserByBloggerUseCase } from './modules/users/use-cases/ban-user-by-blogger.use-case';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { AppConfigService } from './config/config-services/app-config.service';
 
 const CommandHandlers = [
   RegisterUserUseCase,
@@ -54,16 +55,22 @@ const CommandHandlers = [
     }),
     TypeOrmModule.forRootAsync({
       imports: [AppConfigModule],
-      inject: [DbConfigService],
-      useFactory: async (dbConfigService: DbConfigService) => ({
-        type: 'postgres',
-        host: dbConfigService.pgHost,
-        port: dbConfigService.pgPort,
-        username: dbConfigService.pgUsername,
-        password: dbConfigService.pgPassword,
-        database: dbConfigService.pgDbName,
-        ssl: { rejectUnauthorized: false },
-      }),
+      inject: [DbConfigService, AppConfigService],
+      useFactory: async (dbConfigService: DbConfigService, appConfigService: AppConfigService) => {
+        const typeOrmConfigDev: TypeOrmModuleOptions = {
+          type: 'postgres',
+          host: dbConfigService.pgHost,
+          port: dbConfigService.pgPort,
+          username: dbConfigService.pgUsername,
+          password: dbConfigService.pgPassword,
+          database: dbConfigService.pgDbName,
+          // ssl: { rejectUnauthorized: false },
+        };
+        console.log('appConfigService.nodeEnv');
+        console.log(appConfigService.nodeEnv);
+        const typeOrmConfigProd: TypeOrmModuleOptions = { ...typeOrmConfigDev, ssl: { rejectUnauthorized: false } };
+        return appConfigService.nodeEnv.match(/development|test/i) ? typeOrmConfigDev : typeOrmConfigProd;
+      },
     }),
     UsersModule,
     BlogCompositionModule,

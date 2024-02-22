@@ -23,6 +23,7 @@ import { basicAuthValue, delay } from '../utils/helpers';
 import { CreatePostOfBlogDto } from '../../../src/modules/blog-composition/modules/posts/models/input/create-post-of-blog.dto';
 import { ViewPostDto } from '../../../src/modules/blog-composition/modules/posts/models/output/view-post.dto';
 import { UpdateBlogDto } from '../../../src/modules/blog-composition/modules/blogs/models/input/update-blog.dto';
+import { AppConfigModule } from '../../../src/config/app-config.module';
 
 jest.setTimeout(100000);
 const PORT = Number(process.env.PORT || 3000) + 3;
@@ -40,7 +41,7 @@ describe('Super-admin tests (e2e)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, AppConfigModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
