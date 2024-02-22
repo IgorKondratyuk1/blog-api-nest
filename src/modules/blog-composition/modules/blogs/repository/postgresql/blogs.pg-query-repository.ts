@@ -37,11 +37,11 @@ export class BlogsPgQueryRepository extends BlogsQueryRepository {
     return BlogMapper.toView(BlogMapper.toDomainFromPlainSql(dbBlog));
   }
 
-  async findAll(queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>> {
+  async findAll(queryObj: QueryDto, skipBannedBlogs: boolean): Promise<PaginationDto<ViewBlogDto>> {
     console.log(queryObj);
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
-    const filters = this.getFilters(queryObj, true);
+    const filters = this.getFilters(queryObj, skipBannedBlogs);
 
     const queryTotalCount = `SELECT count(*) FROM public."blog" b LEFT JOIN public."sa_blog_ban" sb ON b.id = sb.blog_id ${filters};`;
     console.log(queryTotalCount);
@@ -154,7 +154,7 @@ export class BlogsPgQueryRepository extends BlogsQueryRepository {
     return await this.dataSource.query(query, [queryObj.pageSize, skipValue]);
   }
 
-  getFilters = (queryObj: QueryDto, skipBannedBlogs: boolean, userId: string | null = null): string => {
+  protected getFilters(queryObj: QueryDto, skipBannedBlogs: boolean, userId: string | null = null): string {
     const sqlFilters = [];
 
     // TODO: change "sb.id" to another
@@ -175,5 +175,5 @@ export class BlogsPgQueryRepository extends BlogsQueryRepository {
     }
 
     return '';
-  };
+  }
 }

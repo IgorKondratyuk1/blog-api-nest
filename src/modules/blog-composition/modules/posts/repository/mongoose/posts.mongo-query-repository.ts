@@ -79,13 +79,13 @@ export class PostsMongoQueryRepository extends PostsQueryRepository {
     const foundedPosts = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
 
     const postsViewModels: any[] = await Promise.all(
-      foundedPosts.map(async (post: any) => {
+      foundedPosts.map(async (post: PostMongoEntity) => {
         return this.findOne(post.id, currentUserId);
       }),
     );
 
     const totalCount: number = await this.postModel.countDocuments(filters);
-    const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
+    const pagesCount: number = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
     return new PaginationDto<ViewPostDto>(
       pagesCount,

@@ -11,7 +11,7 @@ export abstract class PostsQueryRepository {
   public abstract findPostsOfBlog(
     blogId: string,
     queryObj: QueryDto,
-    currentUserId: string,
+    currentUserId?: string,
   ): Promise<PaginationDto<ViewPostDto>>;
 
   public abstract findPostsOfBlogByUserId(

@@ -55,6 +55,16 @@ export class BlogsService {
     return await this.blogsRepository.remove(blogId);
   }
 
+  async removeByAdmin(blogId: string): Promise<boolean | CustomErrorDto> {
+    const blog: BlogEntity | null = await this.findById(blogId);
+
+    if (!blog) {
+      return new CustomErrorDto(HttpStatus.NOT_FOUND, 'blog is not found');
+    }
+
+    return await this.blogsRepository.remove(blogId);
+  }
+
   async setBlogBanStatus(blogId: string, banBlogDto: BanBlogDto): Promise<boolean | CustomErrorDto> {
     const blog: BlogEntity | null = await this.blogsRepository.findById(blogId);
     if (!blog) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'blog not found');

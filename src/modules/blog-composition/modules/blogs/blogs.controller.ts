@@ -54,7 +54,7 @@ export class BlogsController {
 
   @Get()
   findAll(@Query() query: QueryDto) {
-    return this.blogsQueryRepository.findAll(query);
+    return this.blogsQueryRepository.findAll(query, true);
   }
 
   @UseGuards(JwtAccessSoftAuthGuard)

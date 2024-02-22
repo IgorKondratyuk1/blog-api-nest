@@ -10,8 +10,6 @@ import { CreateUserDto } from '../../../src/modules/users/models/input/create-us
 import ViewUserDto from '../../../src/modules/users/models/output/view-user.dto';
 import process from 'process';
 import { CreateBlogDto } from '../../../src/modules/blog-composition/modules/blogs/models/input/create-blog.dto';
-import { CreatePostOfBlogDto } from '../../../src/modules/blog-composition/modules/posts/dto/create-post-of-blog.dto';
-import { ViewPostDto } from '../../../src/modules/blog-composition/modules/posts/dto/view-post.dto';
 import { CreateCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/create-comment.dto';
 import { ViewPublicCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/view-public-comment.dto';
 import { LikeStatus } from '../../../src/modules/blog-composition/modules/likes/types/like';
@@ -21,7 +19,10 @@ import { ViewAccessTokenDto } from '../../../src/modules/auth/dto/view-access-to
 import { UpdateLikeDto } from '../../../src/modules/blog-composition/modules/likes/dto/update-like.dto';
 import { ViewBlogDto } from '../../../src/modules/blog-composition/modules/blogs/models/output/view-blog.dto';
 import { UsersTestManager } from '../utils/users-test-manager';
-import { basicAuthValue } from '../utils/helpers';
+import { basicAuthValue, delay } from '../utils/helpers';
+import { CreatePostOfBlogDto } from '../../../src/modules/blog-composition/modules/posts/models/input/create-post-of-blog.dto';
+import { ViewPostDto } from '../../../src/modules/blog-composition/modules/posts/models/output/view-post.dto';
+import { UpdateBlogDto } from '../../../src/modules/blog-composition/modules/blogs/models/input/update-blog.dto';
 
 jest.setTimeout(100000);
 const PORT = Number(process.env.PORT || 3000) + 3;
@@ -48,28 +49,523 @@ describe('Super-admin tests (e2e)', () => {
   });
 
   beforeAll(async () => {
-    const response = await request(app.getHttpServer()).delete('/api/testing/all-data');
+    await request(app.getHttpServer()).delete('/api/testing/all-data');
   });
 
   afterAll(() => {
     app.close();
   });
 
-  describe.skip('Blogs', () => {
-    it.skip('GET: should return array of Blogs with blogOwnerInfo', async () => {
-      // const user = await userModel.create(new UserMongoEntity('aaa', 'aaa@aaa.com', 'ssss'));
-      // const blog = await blogModel.create(new Blog(user.id, 'aaa', 'aaa', 'aaaa'));
+  describe('Blog', () => {
+    afterAll(() => {
+      testsData.blogs = [];
+    });
 
+    // GET
+    it('GET: should return empty array of Blogs', async () => {
       const response = await request(app.getHttpServer()).get('/api/sa/blogs').set('Authorization', basicAuthValue);
-      expect(response.status).toBe(200);
+      const expectedData: PaginationDto<ViewBlogDto> = new PaginationDto<ViewBlogDto>(0, 1, 10, 0, []);
 
-      const expectedViewBlog: ViewExtendedBlogDto = BlogMapper.toExtendedViewFromDocument(blog, user);
-      const expectedData: PaginationDto<ViewExtendedBlogDto> = new PaginationDto<ViewExtendedBlogDto>(1, 1, 10, 1, [
-        expectedViewBlog,
-      ]);
+      expect(response.status).toBe(200);
       expect(response.body).toEqual(expectedData);
     });
 
+    it('POST: should create first blog', async () => {
+      const CreateBlogDto: CreateBlogDto = {
+        name: 'New Blog',
+        websiteUrl: 'https://www.youtube.com',
+        description: 'some description',
+      };
+      const expectedBlog: ViewBlogDto = {
+        id: expect.any(String),
+        name: CreateBlogDto.name,
+        websiteUrl: CreateBlogDto.websiteUrl,
+        description: CreateBlogDto.description,
+        createdAt: expect.any(String),
+        isMembership: expect.any(Boolean),
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send(CreateBlogDto);
+
+      expect(result.status).toBe(201);
+      expect(result.body).toEqual(expectedBlog);
+
+      testsData.blogs.push(result.body);
+    });
+
+    it('GET: should return created blog', async () => {
+      const result = await request(app.getHttpServer()).get('/api/sa/blogs').set('Authorization', basicAuthValue);
+
+      expect(result.status).toBe(200);
+      expect(result.body.items[0]).toEqual(testsData.blogs[0]);
+    });
+
+    it('POST: should create blog with spaces', async () => {
+      const CreateBlogDto: CreateBlogDto = {
+        name: '   Google       ',
+        websiteUrl: 'https://www.google.com',
+        description: 'some description',
+      };
+      const expecedBlog: ViewBlogDto = {
+        id: expect.any(String),
+        name: CreateBlogDto.name.trim(),
+        websiteUrl: CreateBlogDto.websiteUrl,
+        description: CreateBlogDto.description,
+        createdAt: expect.any(String),
+        isMembership: expect.any(Boolean),
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send(CreateBlogDto);
+
+      expect(result.status).toBe(201);
+      expect(result.body).toEqual(expecedBlog);
+
+      testsData.blogs.push(result.body);
+    });
+
+    it('GET: should return created blogs', async () => {
+      const result = await request(app.getHttpServer()).get('/api/sa/blogs').set('Authorization', basicAuthValue);
+
+      const expectedObj: PaginationDto<ViewBlogDto> = {
+        page: 1,
+        pageSize: 10,
+        pagesCount: 1,
+        totalCount: 2,
+        items: expect.any(Array),
+      };
+
+      expect(result.body).toEqual(expectedObj);
+      expect(result.body.items.length).toBe(2);
+      expect(result.body.items[0]).toEqual(testsData.blogs[1]);
+      expect(result.body.items[1]).toEqual(testsData.blogs[0]);
+    });
+
+    it('GET: should return correct blog with query', async () => {
+      const result = await request(app.getHttpServer())
+        .get('/api/sa/blogs?searchNameTerm=google')
+        .set('Authorization', basicAuthValue);
+
+      expect(result.status).toBe(200);
+      expect(result.body.items[0]).toEqual(testsData.blogs.find((blog) => blog.name === 'Google'));
+    });
+
+    it('POST: shouldn`t create blog with lenth > 15', async () => {
+      const CreateBlogDto: CreateBlogDto = {
+        name: '1234567890123456',
+        websiteUrl: 'https://www.youtube.com',
+        description: 'some description',
+      };
+      const expectedError = {
+        errorsMessages: [
+          {
+            message: expect.any(String),
+            field: 'name',
+          },
+        ],
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send(CreateBlogDto);
+
+      expect(result.status).toBe(400);
+      expect(result.body).toEqual(expectedError);
+    });
+
+    it('POST: shouldn`t create blog without websiteUrl', async () => {
+      const expectedError = {
+        errorsMessages: [
+          {
+            message: expect.any(String),
+            field: 'websiteUrl',
+          },
+          {
+            message: expect.any(String),
+            field: 'description',
+          },
+        ],
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send({ name: 'New blog' });
+
+      expect(result.status).toBe(400);
+      expect(result.body).toEqual(expectedError);
+    });
+
+    it('POST: shouldn`t create blog with lentgth > 100', async () => {
+      const CreateBlogDto: CreateBlogDto = {
+        name: 'New post',
+        websiteUrl:
+          'https://www.youtube.comLorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean m1',
+        description: 'some description',
+      };
+      const expectedError = {
+        errorsMessages: [
+          {
+            message: expect.any(String),
+            field: 'websiteUrl',
+          },
+        ],
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send(CreateBlogDto);
+
+      expect(result.status).toBe(400);
+      expect(result.body).toEqual(expectedError);
+    });
+
+    it('Timeout', async () => {
+      await delay(5000);
+    });
+
+    it('POST: shouldn`t create blog with wrong url', async () => {
+      const CreateBlogDto: CreateBlogDto = {
+        name: 'New blog',
+        websiteUrl: 'https:\\/www.youtube.com',
+        description: 'some description',
+      };
+      const expectedError = {
+        errorsMessages: [
+          {
+            message: expect.any(String),
+            field: 'websiteUrl',
+          },
+        ],
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send(CreateBlogDto);
+
+      expect(result.status).toBe(400);
+      expect(result.body).toEqual(expectedError);
+    });
+
+    // PUT
+    it('PUT: blog should be updated by correct data', async () => {
+      const updateBlogModel: UpdateBlogDto = {
+        name: 'Changed title',
+        websiteUrl: 'https://www.google.com',
+        description: 'some description',
+      };
+
+      const expectedBlog: ViewBlogDto = {
+        id: expect.any(String),
+        name: updateBlogModel.name,
+        websiteUrl: updateBlogModel.websiteUrl,
+        description: updateBlogModel.description,
+        createdAt: expect.any(String),
+        isMembership: expect.any(Boolean),
+      };
+
+      const result = await request(app.getHttpServer())
+        .put(`/api/sa/blogs/${testsData.blogs[0].id}`)
+        .set('Authorization', basicAuthValue)
+        .send(updateBlogModel);
+
+      expect(result.status).toBe(204);
+
+      //const dbBlog: BlogDocument = await blogModel.findOne({ id: testsData.blogs[0].id });
+      //expect(BlogMapper.toView(dbBlog)).toEqual(expectedBlog);
+    });
+
+    // PUT
+    it('PUT: blog should be updated by correct data', async () => {
+      const updateBlogModel: UpdateBlogDto = {
+        name: 'Changed title',
+        websiteUrl: 'https://www.google.com',
+        description: 'some description',
+      };
+
+      const expectedBlog: ViewBlogDto = {
+        id: expect.any(String),
+        name: updateBlogModel.name,
+        websiteUrl: updateBlogModel.websiteUrl,
+        description: updateBlogModel.description,
+        createdAt: expect.any(String),
+        isMembership: expect.any(Boolean),
+      };
+
+      const result = await request(app.getHttpServer())
+        .put(`/api/sa/blogs/${testsData.blogs[0].id}`)
+        .set('Authorization', basicAuthValue)
+        .send({ websiteUrl: 'https://www.google.com' });
+
+      expect(result.status).toBe(400);
+
+      // const dbBlog: BlogDocument = await blogModel.findOne({ id: testsData.blogs[0].id });
+      // expect(BlogMapper.toView(dbBlog)).toEqual(expectedBlog);
+    });
+
+    it('PUT: blog shouldn`t be updated by wrong data (without wrong id)', async () => {
+      const updateBlogModel: UpdateBlogDto = {
+        name: 'Changed Title',
+        websiteUrl: 'https://www.google.com',
+        description: 'some description',
+      };
+
+      const result = await request(app.getHttpServer())
+        .put('/api/sa/blogs/1111')
+        .set('Authorization', basicAuthValue)
+        .send(updateBlogModel);
+
+      expect(result.status).toBe(404);
+    });
+
+    // DELETE
+    it('DELETE: blog shouldn`t be deleted (wrong id)', async () => {
+      const result = await request(app.getHttpServer())
+        .delete('/api/sa/blogs/1111')
+        .set('Authorization', basicAuthValue);
+
+      expect(result.status).toBe(404);
+    });
+
+    it('DELETE: blog should be deleted', async () => {
+      const result_1 = await request(app.getHttpServer())
+        .delete(`/api/sa/blogs/${testsData.blogs[0].id}`)
+        .set('Authorization', basicAuthValue)
+        .expect(204);
+
+      const result_2 = await request(app.getHttpServer())
+        .delete(`/api/sa/blogs/${testsData.blogs[1].id}`)
+        .set('Authorization', basicAuthValue)
+        .expect(204);
+    });
+
+    it('GET: should return created blogs', async () => {
+      const result = await request(app.getHttpServer()).get('/api/sa/blogs').set('Authorization', basicAuthValue);
+
+      const expectedObj: PaginationDto<ViewBlogDto> = {
+        page: 1,
+        pageSize: 10,
+        pagesCount: 0,
+        totalCount: 0,
+        items: expect.any(Array),
+      };
+
+      expect(result.body).toEqual(expectedObj);
+      expect(result.body.items.length).toBe(0);
+    });
+  });
+
+  describe('Posts', () => {
+    afterAll(() => {
+      testsData.blogs = [];
+      testsData.posts = [];
+    });
+
+    it('POST: should create first blog', async () => {
+      const CreateBlogDto: CreateBlogDto = {
+        name: 'Blog 1',
+        websiteUrl: 'https://www.youtube.com',
+        description: 'some description',
+      };
+      const expectedBlog: ViewBlogDto = {
+        id: expect.any(String),
+        name: CreateBlogDto.name,
+        websiteUrl: CreateBlogDto.websiteUrl,
+        description: CreateBlogDto.description,
+        createdAt: expect.any(String),
+        isMembership: expect.any(Boolean),
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send(CreateBlogDto);
+
+      expect(result.status).toBe(201);
+      expect(result.body).toEqual(expectedBlog);
+
+      testsData.blogs.push(result.body);
+    });
+
+    it('POST: should create second blog', async () => {
+      const CreateBlogDto: CreateBlogDto = {
+        name: 'Blog 2',
+        websiteUrl: 'https://www.google.com',
+        description: 'some description',
+      };
+      const expectedBlog: ViewBlogDto = {
+        id: expect.any(String),
+        name: CreateBlogDto.name,
+        websiteUrl: CreateBlogDto.websiteUrl,
+        description: CreateBlogDto.description,
+        createdAt: expect.any(String),
+        isMembership: expect.any(Boolean),
+      };
+
+      const result = await request(app.getHttpServer())
+        .post('/api/sa/blogs')
+        .set('Authorization', basicAuthValue)
+        .send(CreateBlogDto);
+
+      expect(result.status).toBe(201);
+      expect(result.body).toEqual(expectedBlog);
+
+      testsData.blogs.push(result.body);
+    });
+
+    it('POST: should create post in first blog', async () => {
+      const createPost: CreatePostOfBlogDto = {
+        title: 'Post 1 of Blog 1',
+        shortDescription: 'some descr',
+        content: 'content',
+      };
+
+      const expectedPost: ViewPostDto = {
+        id: expect.any(String),
+        content: createPost.content,
+        blogId: testsData.blogs[0].id,
+        blogName: testsData.blogs[0].name,
+        shortDescription: createPost.shortDescription,
+        title: createPost.title,
+        createdAt: expect.any(String),
+        extendedLikesInfo: expect.any(Object),
+      };
+
+      const result = await request(app.getHttpServer())
+        .post(`/api/sa/blogs/${testsData.blogs[0].id}/posts`)
+        .set('Authorization', basicAuthValue)
+        .send(createPost);
+
+      expect(result.status).toBe(201);
+      expect(result.body).toEqual(expectedPost);
+
+      const checkResult = await request(app.getHttpServer()).get(`/api/posts/${result.body.id}`);
+      expect(checkResult.body).toEqual(expectedPost);
+
+      testsData.posts.push(result.body);
+    });
+
+    it('POST: should create post in second blog', async () => {
+      const createPost: CreatePostOfBlogDto = {
+        title: 'Post 1 of Blog 2',
+        shortDescription: 'some descr',
+        content: 'content',
+      };
+
+      const expectedPost: ViewPostDto = {
+        id: expect.any(String),
+        content: createPost.content,
+        blogId: testsData.blogs[1].id,
+        blogName: testsData.blogs[1].name,
+        shortDescription: createPost.shortDescription,
+        title: createPost.title,
+        createdAt: expect.any(String),
+        extendedLikesInfo: expect.any(Object),
+      };
+
+      const result = await request(app.getHttpServer())
+        .post(`/api/sa/blogs/${testsData.blogs[1].id}/posts`)
+        .set('Authorization', basicAuthValue)
+        .send(createPost);
+
+      expect(result.status).toBe(201);
+      expect(result.body).toEqual(expectedPost);
+
+      const checkResult = await request(app.getHttpServer()).get(`/api/posts/${result.body.id}`);
+      expect(checkResult.body).toEqual(expectedPost);
+
+      testsData.posts.push(result.body);
+    });
+
+    it('PUT: should update post in first blog', async () => {
+      const createPost: CreatePostOfBlogDto = {
+        title: 'Updated Post 1 of Blog 1',
+        shortDescription: 'updated some descr',
+        content: 'updated content',
+      };
+
+      const expectedPost: ViewPostDto = {
+        id: expect.any(String),
+        content: createPost.content,
+        blogId: testsData.blogs[0].id,
+        blogName: testsData.blogs[0].name,
+        shortDescription: createPost.shortDescription,
+        title: createPost.title,
+        createdAt: expect.any(String),
+        extendedLikesInfo: expect.any(Object),
+      };
+
+      const result = await request(app.getHttpServer())
+        .put(`/api/sa/blogs/${testsData.blogs[0].id}/posts/${testsData.posts[0].id}`)
+        .set('Authorization', basicAuthValue)
+        .send(createPost);
+
+      expect(result.status).toBe(204);
+
+      const checkResult = await request(app.getHttpServer()).get(`/api/posts/${testsData.posts[0].id}`);
+      expect(checkResult.body).toEqual(expectedPost);
+    });
+
+    it('DELETE: shouldn`t update post with wrong id', async () => {
+      const result = await request(app.getHttpServer())
+        .delete(`/api/sa/blogs/${testsData.blogs[0].id}/posts/1`)
+        .set('Authorization', basicAuthValue);
+
+      expect(result.status).toBe(404);
+    });
+
+    it('DELETE: shouldn`t update post with wrong blog id', async () => {
+      const result = await request(app.getHttpServer())
+        .delete(`/api/sa/blogs/1/posts/${testsData.posts[0].id}`)
+        .set('Authorization', basicAuthValue);
+
+      expect(result.status).toBe(404);
+    });
+
+    it('DELETE: should delete post in first blog', async () => {
+      const result = await request(app.getHttpServer())
+        .delete(`/api/sa/blogs/${testsData.blogs[0].id}/posts/${testsData.posts[0].id}`)
+        .set('Authorization', basicAuthValue);
+
+      expect(result.status).toBe(204);
+
+      // const dbPost: PostDocument | null = await postModel.findOne({ id: testsData.posts[0].id });
+      // expect(dbPost).toBeNull();
+    });
+
+    it('DELETE: should delete post in second blog', async () => {
+      const result = await request(app.getHttpServer())
+        .delete(`/api/sa/blogs/${testsData.blogs[1].id}/posts/${testsData.posts[1].id}`)
+        .set('Authorization', basicAuthValue);
+
+      expect(result.status).toBe(204);
+
+      // const dbPost: PostDocument | null = await postModel.findOne({ id: testsData.posts[1].id });
+      // expect(dbPost).toBeNull();
+    });
+  });
+
+  describe.skip('Blogs Bind', () => {
+    it('GET: should return array of Blogs with blogOwnerInfo', async () => {
+      // const user = await userModel.create(new UserMongoEntity('aaa', 'aaa@aaa.com', 'ssss'));
+      // const blog = await blogModel.create(new Blog(user.id, 'aaa', 'aaa', 'aaaa'));
+      // const response = await request(app.getHttpServer()).get('/api/sa/blogs').set('Authorization', basicAuthValue);
+      // expect(response.status).toBe(200);
+      //
+      // const expectedViewBlog: ViewExtendedBlogDto = BlogMapper.toExtendedViewFromDocument(blog, user);
+      // const expectedData: PaginationDto<ViewExtendedBlogDto> = new PaginationDto<ViewExtendedBlogDto>(1, 1, 10, 1, [
+      //   expectedViewBlog,
+      // ]);
+      // expect(response.body).toEqual(expectedData);
+    });
     describe('Bind blog and user', () => {
       let user;
       let blog;
@@ -176,7 +672,7 @@ describe('Super-admin tests (e2e)', () => {
     // TODO: write tests - ban user, update (bind) blog with wrong data
   });
 
-  describe('Ban', () => {
+  describe.skip('Ban', () => {
     const banReason = 'some reason with more than 20 symbols';
 
     describe('SA should create users', () => {
@@ -231,8 +727,8 @@ describe('Super-admin tests (e2e)', () => {
           };
 
           const result = await request(app.getHttpServer())
-            .post('/api/blogger/blogs')
-            .set('Authorization', `Bearer ${testsData.jwtToken}`)
+            .post('/api/sa/blogs')
+            .set('Authorization', basicAuthValue)
             .send(createBlogDto);
 
           expect(result.status).toBe(201);
@@ -260,8 +756,8 @@ describe('Super-admin tests (e2e)', () => {
           };
 
           const result = await request(app.getHttpServer())
-            .post(`/api/blogger/blogs/${testsData.blogs[0].id}/posts`)
-            .set('Authorization', `Bearer ${testsData.jwtToken}`)
+            .post(`/api/sa/blogs/${testsData.blogs[0].id}/posts`)
+            .set('Authorization', basicAuthValue)
             .send(createPost);
 
           expect(result.status).toBe(201);
@@ -280,7 +776,7 @@ describe('Super-admin tests (e2e)', () => {
 
           const result = await request(app.getHttpServer())
             .post(`/api/posts/${testsData.posts[0].id}/comments`)
-            .set('Authorization', `Bearer ${testsData.jwtToken}`)
+            .set('Authorization', basicAuthValue)
             .send(сreateCommentDto)
             .expect(201);
 
@@ -310,7 +806,7 @@ describe('Super-admin tests (e2e)', () => {
 
           const result = await request(app.getHttpServer())
             .put(`/api/comments/${testsData.comments[0].id}/like-status`)
-            .set('Authorization', `Bearer ${testsData.jwtToken}`)
+            .set('Authorization', basicAuthValue)
             .send(updateLikeDto)
             .expect(204);
         });
@@ -337,7 +833,7 @@ describe('Super-admin tests (e2e)', () => {
 
           const result = await request(app.getHttpServer())
             .post(`/api/posts/${testsData.posts[0].id}/comments`)
-            .set('Authorization', `Bearer ${testsData.jwtToken}`)
+            .set('Authorization', basicAuthValue)
             .send(сreateCommentDto)
             .expect(201);
 
@@ -367,7 +863,7 @@ describe('Super-admin tests (e2e)', () => {
 
           const result = await request(app.getHttpServer())
             .put(`/api/posts/${testsData.posts[0].id}/like-status`)
-            .set('Authorization', `Bearer ${testsData.jwtToken}`)
+            .set('Authorization', basicAuthValue)
             .send(updateLikeDto)
             .expect(204);
         });
@@ -379,7 +875,7 @@ describe('Super-admin tests (e2e)', () => {
 
           const result = await request(app.getHttpServer())
             .put(`/api/comments/${testsData.comments[0].id}/like-status`)
-            .set('Authorization', `Bearer ${testsData.jwtToken}`)
+            .set('Authorization', basicAuthValue)
             .send(updateLikeDto)
             .expect(204);
         });

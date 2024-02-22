@@ -39,6 +39,15 @@ export class PostsService {
     return PostMapper.toView(createdPost);
   }
 
+  async createByAdmin(blogId: string, createPostOfBlogDto: CreatePostOfBlogDto): Promise<ViewPostDto | CustomErrorDto> {
+    const blog: BlogEntity | null = await this.blogsRepository.findById(blogId);
+    if (!blog) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'Blog not found');
+
+    const postEntity: PostEntity = PostEntity.createInstance(null, blog.id, blog.name, createPostOfBlogDto);
+    const createdPost: PostEntity = await this.postsRepository.create(postEntity);
+    return PostMapper.toView(createdPost);
+  }
+
   async updateLikeStatus(
     id: string,
     userId: string,
@@ -78,6 +87,25 @@ export class PostsService {
     return result;
   }
 
+  async updateWithBlogIdByAdmin(
+    postId: string,
+    blogId: string,
+    updatePostDto: UpdatePostOfBlogDto,
+  ): Promise<boolean | CustomErrorDto> {
+    const post: PostEntity | null = await this.postsRepository.findById(postId);
+    if (!post) {
+      return new CustomErrorDto(HttpStatus.NOT_FOUND, 'post is not found');
+    }
+
+    if (post.blogId !== blogId) {
+      return new CustomErrorDto(HttpStatus.NOT_FOUND, 'wrong blogId');
+    }
+
+    post.updatePost(updatePostDto);
+    const result = await this.postsRepository.save(post);
+    return result;
+  }
+
   async setBanStatusByUserId(userId: string, isBanned: boolean): Promise<boolean> {
     return await this.postsRepository.setBanStatusByUserId(userId, isBanned);
   }
@@ -99,6 +127,20 @@ export class PostsService {
 
     if (post.userId !== userId) {
       return new CustomErrorDto(HttpStatus.FORBIDDEN, 'can not update not own post');
+    }
+
+    return this.postsRepository.remove(postId);
+  }
+
+  async removeWithBlogIdByAdmin(postId: string, blogId: string): Promise<boolean | CustomErrorDto> {
+    const post: PostEntity | null = await this.findById(postId);
+
+    if (!post) {
+      return new CustomErrorDto(HttpStatus.NOT_FOUND, 'post is not found');
+    }
+
+    if (post.blogId !== blogId) {
+      return new CustomErrorDto(HttpStatus.NOT_FOUND, 'wrong blogId');
     }
 
     return this.postsRepository.remove(postId);

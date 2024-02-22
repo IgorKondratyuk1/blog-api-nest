@@ -21,21 +21,17 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
     super();
   }
 
-  async findOne(id: string): Promise<ViewBlogDto | null> {
+  public async findOne(id: string): Promise<ViewBlogDto | null> {
     const dbBlog = await this.blogModel.findOne({ id, 'banInfo.isBanned': false });
     if (!dbBlog) return null;
 
     return BlogMapper.toView(dbBlog);
   }
 
-  async findAll(queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>> {
+  public async findAll(queryObj: QueryDto, skipBannedBlogs: boolean): Promise<PaginationDto<ViewBlogDto>> {
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
-    // TODO: add Class or Type to Filters Object
-    const filters = {
-      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-      'banInfo.isBanned': false,
-    };
+    const filters = this.getFilters(queryObj, skipBannedBlogs); // TODO: add Class or Type to Filters Object
 
     const foundedBlogs: BlogMongoEntity[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
@@ -52,13 +48,10 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
   }
 
   // Only for SA
-  async findBlogsWithExtendedInfo(queryObj: QueryDto): Promise<PaginationDto<ViewExtendedBlogDto>> {
+  public async findBlogsWithExtendedInfo(queryObj: QueryDto): Promise<PaginationDto<ViewExtendedBlogDto>> {
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
-    const filters = {
-      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-      //'banInfo.isBanned': false,
-    };
+    const filters = this.getFilters(queryObj, false);
 
     const foundedBlogs: BlogMongoEntity[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
     const blogsViewModels: ViewExtendedBlogDto[] = await Promise.all(
@@ -81,18 +74,12 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
   }
 
   // Only for Blogger
-  async findBlogsByCreatedUserId(userId: string, queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>> {
+  public async findBlogsByCreatedUserId(userId: string, queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>> {
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
-
-    const filters = {
-      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
-      //'banInfo.isBanned': false,
-      userId,
-    };
+    const filters = this.getFilters(queryObj, false, userId);
 
     const foundedBlogs: BlogMongoEntity[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
-
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
     const totalCount: number = await this.blogModel.countDocuments(filters);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
@@ -114,5 +101,21 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
       .limit(queryObj.pageSize)
       .lean()
       .exec();
+  }
+
+  protected getFilters(queryObj: QueryDto, skipBannedBlogs: boolean, userId: string | null = null): object {
+    const filters = {
+      name: { $regex: new RegExp(queryObj.searchNameTerm, 'i') },
+    };
+
+    if (skipBannedBlogs) {
+      filters['banInfo.isBanned'] = false;
+    }
+
+    if (userId) {
+      filters['userId'] = userId;
+    }
+
+    return filters;
   }
 }
