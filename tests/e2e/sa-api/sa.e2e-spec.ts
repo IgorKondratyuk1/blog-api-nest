@@ -10,13 +10,13 @@ import { CreateUserDto } from '../../../src/modules/users/models/input/create-us
 import ViewUserDto from '../../../src/modules/users/models/output/view-user.dto';
 import process from 'process';
 import { CreateBlogDto } from '../../../src/modules/blog-composition/modules/blogs/models/input/create-blog.dto';
-import { CreateCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/create-comment.dto';
-import { ViewPublicCommentDto } from '../../../src/modules/blog-composition/modules/comments/dto/view-public-comment.dto';
+import { CreateCommentDto } from '../../../src/modules/blog-composition/modules/comments/models/input/create-comment.dto';
+import { ViewPublicCommentDto } from '../../../src/modules/blog-composition/modules/comments/models/output/view-public-comment.dto';
 import { LikeStatus } from '../../../src/modules/blog-composition/modules/likes/types/like';
 import { BanUserDto } from '../../../src/modules/ban/dto/input/ban-user.dto';
 import { LoginDto } from '../../../src/modules/auth/dto/login.dto';
 import { ViewAccessTokenDto } from '../../../src/modules/auth/dto/view-access-token.dto';
-import { UpdateLikeDto } from '../../../src/modules/blog-composition/modules/likes/dto/update-like.dto';
+import { UpdateLikeDto } from '../../../src/modules/blog-composition/modules/likes/models/input/update-like.dto';
 import { ViewBlogDto } from '../../../src/modules/blog-composition/modules/blogs/models/output/view-blog.dto';
 import { UsersTestManager } from '../utils/users-test-manager';
 import { basicAuthValue, delay } from '../utils/helpers';

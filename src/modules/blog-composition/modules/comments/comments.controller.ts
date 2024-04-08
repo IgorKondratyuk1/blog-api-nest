@@ -12,16 +12,16 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
-import { UpdateCommentDto } from './dto/update-comment.dto';
-import { CommentsQueryRepository } from './comments.query-repository';
+import { UpdateCommentDto } from './models/input/update-comment.dto';
 import { JwtAccessStrictAuthGuard } from '../../../auth/guards/jwt-access-strict-auth.guard';
 import { CurrentTokenPayload } from '../../../auth/decorators/current-token-payload.param.decorator';
 import { AuthTokenPayloadDto } from '../../../auth/dto/auth-token-payload.dto';
-import { UpdateLikeDto } from '../likes/dto/update-like.dto';
+import { UpdateLikeDto } from '../likes/models/input/update-like.dto';
 import { CustomErrorDto } from '../../../../common/dto/error';
 import { JwtAccessSoftAuthGuard } from '../../../auth/guards/jwt-access-soft-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user-id.param.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CommentsQueryRepository } from './interfaces/comments.query-repository';
 
 @SkipThrottle()
 @Controller('comments')

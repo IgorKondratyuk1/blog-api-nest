@@ -66,8 +66,7 @@ const CommandHandlers = [
           database: dbConfigService.pgDbName,
           // ssl: { rejectUnauthorized: false },
         };
-        console.log('appConfigService.nodeEnv');
-        console.log(appConfigService.nodeEnv);
+
         const typeOrmConfigProd: TypeOrmModuleOptions = { ...typeOrmConfigDev, ssl: { rejectUnauthorized: false } };
         return appConfigService.nodeEnv.match(/development|test/i) ? typeOrmConfigDev : typeOrmConfigProd;
       },

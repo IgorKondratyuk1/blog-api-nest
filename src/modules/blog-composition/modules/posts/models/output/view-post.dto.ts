@@ -1,4 +1,4 @@
-import { ExtendedLikesInfo } from '../../../likes/dto/extended-likes-info.dto';
+import { ExtendedLikesInfo } from '../../../likes/models/output/extended-likes-info.dto';
 
 export class ViewPostDto {
   constructor(

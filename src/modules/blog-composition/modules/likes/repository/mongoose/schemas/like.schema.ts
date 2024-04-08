@@ -1,27 +1,27 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { randomUUID } from 'crypto';
-import { LikeLocation, LikeLocationsType, LikeStatus, LikeStatusType } from '../types/like';
-
-export type LikeDocument = HydratedDocument<Like>;
+import { LikeLocation, LikeLocationsType, LikeStatus, LikeStatusType } from '../../../types/like';
 
 @Schema()
-export class Like {
+export class LikeMongoEntity {
   constructor(
+    id: string,
     userId: string,
     userLogin: string,
-    locationName: LikeLocationsType,
     locationId: string,
+    locationName: LikeLocationsType,
     myStatus: LikeStatusType,
+    isBanned: boolean,
+    createdAt: Date,
   ) {
-    this.id = randomUUID();
-    this.createdAt = new Date();
+    this.id = id;
     this.userId = userId;
     this.userLogin = userLogin;
     this.locationName = locationName;
     this.locationId = locationId;
     this.myStatus = myStatus;
-    this.isBanned = false;
+    this.isBanned = isBanned;
+    this.createdAt = createdAt;
   }
 
   @Prop({ type: String, required: true })
@@ -52,29 +52,7 @@ export class Like {
     },
   })
   createdAt: Date;
-
-  public setLikeStatus(likeStatus: LikeStatusType) {
-    this.createdAt = new Date();
-    this.myStatus = likeStatus;
-  }
-
-  public static createInstance(
-    userId: string,
-    userLogin: string,
-    locationName: LikeLocationsType,
-    locationId: string,
-    myStatus: LikeStatusType,
-  ) {
-    return new Like(userId, userLogin, locationName, locationId, myStatus);
-  }
 }
 
-export const LikeSchema = SchemaFactory.createForClass(Like);
-
-LikeSchema.methods = {
-  setLikeStatus: Like.prototype.setLikeStatus,
-};
-
-LikeSchema.statics = {
-  createInstance: Like.createInstance,
-};
+export type LikeDocument = HydratedDocument<LikeMongoEntity>;
+export const LikeSchema = SchemaFactory.createForClass(LikeMongoEntity);

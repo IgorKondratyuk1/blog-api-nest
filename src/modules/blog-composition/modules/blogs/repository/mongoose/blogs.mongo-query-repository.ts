@@ -33,7 +33,7 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
     const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
     const filters = this.getFilters(queryObj, skipBannedBlogs); // TODO: add Class or Type to Filters Object
 
-    const foundedBlogs: BlogMongoEntity[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
+    const foundedBlogs: BlogMongoEntity[] = await this.findBlogsByFilters(filters, queryObj, sortValue, skipValue);
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
     const totalCount: number = await this.blogModel.countDocuments(filters);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
@@ -53,7 +53,7 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
     const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
     const filters = this.getFilters(queryObj, false);
 
-    const foundedBlogs: BlogMongoEntity[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
+    const foundedBlogs: BlogMongoEntity[] = await this.findBlogsByFilters(filters, queryObj, sortValue, skipValue);
     const blogsViewModels: ViewExtendedBlogDto[] = await Promise.all(
       foundedBlogs.map(async (blog) => {
         const user: UserEntity | null = await this.usersRepository.findById(blog.userId);
@@ -79,7 +79,7 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
     const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
     const filters = this.getFilters(queryObj, false, userId);
 
-    const foundedBlogs: BlogMongoEntity[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
+    const foundedBlogs: BlogMongoEntity[] = await this.findBlogsByFilters(filters, queryObj, sortValue, skipValue);
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toView); // Get View models of Blogs
     const totalCount: number = await this.blogModel.countDocuments(filters);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
@@ -93,7 +93,7 @@ export class BlogsMongoQueryRepository extends BlogsQueryRepository {
     );
   }
 
-  protected async findBlogByFilters(filters, queryObj, sortValue, skipValue) {
+  protected async findBlogsByFilters(filters, queryObj, sortValue, skipValue) {
     return this.blogModel
       .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })

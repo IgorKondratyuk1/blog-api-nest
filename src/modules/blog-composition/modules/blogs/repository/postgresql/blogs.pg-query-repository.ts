@@ -49,7 +49,7 @@ export class BlogsPgQueryRepository extends BlogsQueryRepository {
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
-    const foundedBlogs: DbBlog[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
+    const foundedBlogs: DbBlog[] = await this.findBlogsByFilters(filters, queryObj, sortValue, skipValue);
     const blogEntities: BlogEntity[] = foundedBlogs.map(BlogMapper.toDomainFromPlainSql);
     const blogsViewModels: ViewBlogDto[] = blogEntities.map(BlogMapper.toView);
 
@@ -104,7 +104,7 @@ export class BlogsPgQueryRepository extends BlogsQueryRepository {
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
-    const foundedBlogs: DbBlog[] = await this.findBlogByFilters(filters, queryObj, sortValue, skipValue);
+    const foundedBlogs: DbBlog[] = await this.findBlogsByFilters(filters, queryObj, sortValue, skipValue);
     console.log('findBlogsByCreatedUserId');
     console.log(foundedBlogs);
     const blogsViewModels: ViewBlogDto[] = foundedBlogs.map(BlogMapper.toDomainFromPlainSql).map(BlogMapper.toView); // Get View models of Blogs
@@ -118,7 +118,7 @@ export class BlogsPgQueryRepository extends BlogsQueryRepository {
     );
   }
 
-  protected async findBlogByFilters(filters, queryObj, sortValue, skipValue): Promise<DbBlog[]> {
+  protected async findBlogsByFilters(filters, queryObj, sortValue, skipValue): Promise<DbBlog[]> {
     let query =
       'SELECT b.id as "id", b.name as "name", b.description as "description", b.website_url as "websiteUrl", ' +
       'b.is_membership as "isMembership", b.created_at as "createdAt", b.user_id as "userId", ' +

@@ -7,11 +7,11 @@ import { PostMapper } from '../../utils/postMapper';
 import { QueryDto } from '../../../../../../common/dto/query.dto';
 import { PaginationHelper } from '../../../../../../common/utils/paginationHelper';
 import { PaginationDto } from '../../../../../../common/dto/pagination';
-import { LikesRepository } from '../../../likes/likes.repository';
-import { LikesDislikesCountDto } from '../../../likes/dto/likes-dislikes-count.dto';
-import { Like } from '../../../likes/schemas/like.schema';
+import { LikesDislikesCountDto } from '../../../likes/models/output/likes-dislikes-count.dto';
 import { ViewPostDto } from '../../models/output/view-post.dto';
 import { PostsQueryRepository } from '../../interfaces/posts.query-repository';
+import { LikeEntity } from '../../../likes/entities/like.entity';
+import { LikesRepository } from '../../../likes/interfaces/likes.repository';
 
 @Injectable()
 export class PostsMongoQueryRepository extends PostsQueryRepository {
@@ -26,8 +26,11 @@ export class PostsMongoQueryRepository extends PostsQueryRepository {
     const post = await this.postModel.findOne({ id: postId, isBanned: false });
     if (!post) return null;
 
-    const lastLikes: Like[] | null = await this.likesRepository.getLastLikesInfo(postId, LikeLocation.Post, 3);
-    const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(postId);
+    const lastLikes: LikeEntity[] | null = await this.likesRepository.getLastLikesInfo(postId, LikeLocation.Post, 3);
+    const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(
+      postId,
+      LikeLocation.Post,
+    );
     const likeStatus: LikeStatusType = await this.likesRepository.getUserLikeStatus(
       currentUserId,
       postId,

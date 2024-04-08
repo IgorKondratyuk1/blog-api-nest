@@ -26,9 +26,6 @@ export class BlogsPgRepository extends BlogsRepository {
         blog.id,
       ]);
 
-      console.log('resultUpdateBlogQuery');
-      console.log(resultUpdateBlogQuery);
-
       return true;
     } catch (e) {
       console.log(e);
@@ -108,6 +105,7 @@ export class BlogsPgRepository extends BlogsRepository {
         'DELETE FROM public."sa_blog_ban" sb WHERE sb.blog_id = $1;',
         [blog.id],
       );
+
       const deleteBlogResult = await this.dataSource.query('DELETE FROM public."blog" b WHERE b.id = $1;', [blog.id]);
       console.log(deleteBlogResult);
       return deleteBlogResult[1] === 1;

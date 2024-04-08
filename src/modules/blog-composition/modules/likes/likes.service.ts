@@ -1,7 +1,7 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { LikesRepository } from './likes.repository';
-import { LikeLocationsType, LikeStatusType } from './types/like';
-import { LikeDocument } from './schemas/like.schema';
+import { Injectable } from '@nestjs/common';
+import { LikeLocationsType, LikeStatus, LikeStatusType } from './types/like';
+import { LikesRepository } from './interfaces/likes.repository';
+import { LikeEntity } from './entities/like.entity';
 
 @Injectable()
 export class LikesService {
@@ -15,12 +15,12 @@ export class LikesService {
     status: LikeStatusType,
   ) {
     switch (status) {
-      case 'Like':
-      case 'Dislike':
+      case LikeStatus.Like:
+      case LikeStatus.Dislike:
         const updateResult = await this.createOrUpdateLike(userId, userLogin, locationName, locationId, status);
         return updateResult;
         break;
-      case 'None':
+      case LikeStatus.None:
         const deleteResult = await this.removeLike(userId, locationName, locationId);
         return deleteResult;
         break;
@@ -39,16 +39,18 @@ export class LikesService {
   ): Promise<boolean> {
     try {
       // 1. Find like status
-      const foundedLike: LikeDocument | null = await this.likesRepository.getUserLike(userId, locationId, locationName);
+      const foundedLike: LikeEntity | null = await this.likesRepository.getUserLike(userId, locationId, locationName);
 
       // 2. If like founded: update existing likeObject status
-      //    Else: create new likeObject
       if (foundedLike) {
-        await foundedLike.setLikeStatus(status);
+        foundedLike.setLikeStatus(status);
         await this.likesRepository.save(foundedLike);
-      } else {
-        await this.likesRepository.create(userId, userLogin, locationName, locationId, status);
+        return true;
       }
+
+      // Else (if like doesn't found): create new like
+      const createLike = LikeEntity.createInstance(userId, userLogin, locationName, locationId, status);
+      await this.likesRepository.create(createLike);
 
       return true;
     } catch (e) {
@@ -62,11 +64,11 @@ export class LikesService {
   }
 
   async removeLike(userId: string, locationName: LikeLocationsType, locationId: string): Promise<boolean> {
-    const result: boolean = await this.likesRepository.deleteLike(locationId, locationName, userId);
+    const result: boolean = await this.likesRepository.removeLike(locationId, locationName, userId);
     return result;
   }
 
   async removeAll(): Promise<boolean> {
-    return await this.likesRepository.deleteAllLikes();
+    return await this.likesRepository.removeAll();
   }
 }

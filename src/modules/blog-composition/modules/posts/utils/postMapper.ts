@@ -1,14 +1,16 @@
-import { PostMongoEntity, PostDocument } from '../repository/mongoose/schemas/post.schema';
+import { PostMongoEntity } from '../repository/mongoose/schemas/post.schema';
 import { LikeStatus, LikeStatusType } from '../../likes/types/like';
-import { ExtendedLikesInfo } from '../../likes/dto/extended-likes-info.dto';
-import { Like } from '../../likes/schemas/like.schema';
-import { LikeDetails } from '../../likes/dto/like-details.sto';
+import { ExtendedLikesInfo } from '../../likes/models/output/extended-likes-info.dto';
 import { ViewPostDto } from '../models/output/view-post.dto';
 import { PostEntity } from '../entities/post.entity';
 import { DbPost } from '../repository/postgresql/types/post';
+import { BlogMongoEntity } from '../../blogs/repository/mongoose/schemas/blog.schema';
+import { LikeDetails } from '../../likes/models/output/like-details.dto';
+import { LikeEntity } from '../../likes/entities/like.entity';
+import { LikeMongoEntity } from '../../likes/repository/mongoose/schemas/like.schema';
 
 export class PostMapper {
-  public static toLikeDetails(like: Like): LikeDetails {
+  public static toLikeDetails(like: LikeEntity | LikeMongoEntity): LikeDetails {
     return new LikeDetails(like.createdAt.toISOString(), like.userId, like.userLogin);
   }
 
@@ -17,7 +19,7 @@ export class PostMapper {
     likeStatus: LikeStatusType = LikeStatus.None,
     likesCount = 0,
     dislikesCount = 0,
-    lastLikes: Like[] = [],
+    lastLikes: LikeEntity[] | LikeMongoEntity[] = [],
   ) {
     const newestLikes: LikeDetails[] = lastLikes.map((like) => {
       return this.toLikeDetails(like);

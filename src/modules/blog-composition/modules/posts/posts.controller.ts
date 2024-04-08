@@ -13,23 +13,24 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { PostsMongoQueryRepository } from './repository/mongoose/posts.mongo-query-repository';
-import { CommentsQueryRepository } from '../comments/comments.query-repository';
-import { ViewPublicCommentDto } from '../comments/dto/view-public-comment.dto';
+import { ViewPublicCommentDto } from '../comments/models/output/view-public-comment.dto';
 import { QueryDto } from '../../../../common/dto/query.dto';
 import { PaginationDto } from '../../../../common/dto/pagination';
 import { JwtAccessStrictAuthGuard } from '../../../auth/guards/jwt-access-strict-auth.guard';
 import { CurrentTokenPayload } from '../../../auth/decorators/current-token-payload.param.decorator';
 import { AuthTokenPayloadDto } from '../../../auth/dto/auth-token-payload.dto';
-import { UpdateLikeDto } from '../likes/dto/update-like.dto';
+import { UpdateLikeDto } from '../likes/models/input/update-like.dto';
 import { CommentsService } from '../comments/comments.service';
-import { CreateCommentDto } from '../comments/dto/create-comment.dto';
+import { CreateCommentDto } from '../comments/models/input/create-comment.dto';
 import { CustomErrorDto } from '../../../../common/dto/error';
 import { JwtAccessSoftAuthGuard } from '../../../auth/guards/jwt-access-soft-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user-id.param.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PostEntity } from './entities/post.entity';
 import { PostsQueryRepository } from './interfaces/posts.query-repository';
+import { CommentEntity } from '../comments/entities/comment.entity';
+import { CommentsMapper } from '../comments/utils/comments.mapper';
+import { CommentsQueryRepository } from '../comments/interfaces/comments.query-repository';
 
 @SkipThrottle()
 @Controller('posts')
@@ -91,13 +92,13 @@ export class PostsController {
     @CurrentTokenPayload() tokenPayload: AuthTokenPayloadDto,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    const result: ViewPublicCommentDto | CustomErrorDto = await this.commentsService.create(
+    const result: CommentEntity | CustomErrorDto = await this.commentsService.create(
       createCommentDto,
       id,
       tokenPayload.userId,
     );
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
-    return result;
+    return CommentsMapper.toPublicViewFromDomain(result);
   }
 
   @UseGuards(JwtAccessSoftAuthGuard)

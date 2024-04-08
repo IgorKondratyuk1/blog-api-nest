@@ -22,12 +22,12 @@ import { JwtAccessStrictAuthGuard } from '../auth/guards/jwt-access-strict-auth.
 import { CurrentTokenPayload } from '../auth/decorators/current-token-payload.param.decorator';
 import { AuthTokenPayloadDto } from '../auth/dto/auth-token-payload.dto';
 import { PostsService } from '../blog-composition/modules/posts/posts.service';
-import { CommentsQueryRepository } from '../blog-composition/modules/comments/comments.query-repository';
 import { CreatePostOfBlogDto } from '../blog-composition/modules/posts/models/input/create-post-of-blog.dto';
 import { ViewPostDto } from '../blog-composition/modules/posts/models/output/view-post.dto';
 import { UpdatePostOfBlogDto } from '../blog-composition/modules/posts/models/input/update-post-of-blog.dto';
 import { BlogsQueryRepository } from '../blog-composition/modules/blogs/interfaces/blogs.query-repository';
 import { PostsQueryRepository } from '../blog-composition/modules/posts/interfaces/posts.query-repository';
+import { CommentsQueryRepository } from '../blog-composition/modules/comments/interfaces/comments.query-repository';
 
 @Controller('blogger/blogs')
 export class BloggerBlogsController {

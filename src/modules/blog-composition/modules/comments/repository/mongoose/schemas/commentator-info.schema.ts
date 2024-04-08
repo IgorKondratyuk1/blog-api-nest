@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({ _id: false })
-export class CommentatorInfo {
+export class CommentatorInfoMongoEntity {
   constructor(userId: string, userLogin: string) {
     this.userId = userId;
     this.userLogin = userLogin;
@@ -14,4 +14,4 @@ export class CommentatorInfo {
   userLogin: string;
 }
 
-export const CommentatorInfoSchema = SchemaFactory.createForClass(CommentatorInfo);
+export const CommentatorInfoSchema = SchemaFactory.createForClass(CommentatorInfoMongoEntity);

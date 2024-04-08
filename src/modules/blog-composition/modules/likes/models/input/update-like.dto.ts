@@ -1,7 +1,7 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { LikeStatus, LikeStatusType } from '../types/like';
+import { LikeStatus, LikeStatusType } from '../../types/like';
 
-export class CreateLikeDto {
+export class UpdateLikeDto {
   @IsNotEmpty()
   @IsString()
   @IsEnum(LikeStatus)

@@ -8,5 +8,5 @@ export abstract class BlogsQueryRepository {
   public abstract findAll(queryObj: QueryDto, skipBannedBlogs: boolean): Promise<PaginationDto<ViewBlogDto>>;
   public abstract findBlogsWithExtendedInfo(queryObj: QueryDto): Promise<PaginationDto<ViewExtendedBlogDto>>;
   public abstract findBlogsByCreatedUserId(userId: string, queryObj: QueryDto): Promise<PaginationDto<ViewBlogDto>>;
-  protected abstract findBlogByFilters(filters, queryObj, sortValue, skipValue): Promise<any[]>;
+  protected abstract findBlogsByFilters(filters, queryObj, sortValue, skipValue): Promise<any[]>;
 }

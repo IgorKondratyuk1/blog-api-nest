@@ -1,31 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentDocument } from './schemas/comment.schema';
+import { CommentDocument, CommentMongoEntity } from './schemas/comment.schema';
 import { Model } from 'mongoose';
-import { LikeLocation, LikeStatusType } from '../likes/types/like';
-import { CommentsMapper } from './utils/comments.mapper';
-import { ViewPublicCommentDto } from './dto/view-public-comment.dto';
-import { QueryDto } from '../../../../common/dto/query.dto';
-import { PaginationHelper } from '../../../../common/utils/paginationHelper';
-import { PaginationDto } from '../../../../common/dto/pagination';
-import { LikesRepository } from '../likes/likes.repository';
-import { LikesDislikesCountDto } from '../likes/dto/likes-dislikes-count.dto';
-import { BlogDocument } from '../blogs/repository/mongoose/schemas/blog.schema';
-import { ViewBloggerCommentDto } from './dto/view-blogger-comment.dto';
-import { PostDocument } from '../posts/repository/mongoose/schemas/post.schema';
-import { BlogsRepository } from '../blogs/interfaces/blogs.repository';
-import { PostsRepository } from '../posts/interfaces/posts.repository';
-import { PostEntity } from '../posts/entities/post.entity';
-import { BlogEntity } from '../blogs/entities/blog.entity';
+import { LikeLocation, LikeStatusType } from '../../../likes/types/like';
+import { CommentsMapper } from '../../utils/comments.mapper';
+import { ViewPublicCommentDto } from '../../models/output/view-public-comment.dto';
+import { QueryDto } from '../../../../../../common/dto/query.dto';
+import { PaginationHelper } from '../../../../../../common/utils/paginationHelper';
+import { PaginationDto } from '../../../../../../common/dto/pagination';
+import { LikesDislikesCountDto } from '../../../likes/models/output/likes-dislikes-count.dto';
+import { ViewBloggerCommentDto } from '../../models/output/view-blogger-comment.dto';
+import { PostEntity } from '../../../posts/entities/post.entity';
+import { BlogEntity } from '../../../blogs/entities/blog.entity';
+import { CommentsQueryRepository } from '../../interfaces/comments.query-repository';
+import { LikesRepository } from '../../../likes/interfaces/likes.repository';
+import { BlogsRepository } from '../../../blogs/interfaces/blogs.repository';
+import { PostsRepository } from '../../../posts/interfaces/posts.repository';
 
 @Injectable()
-export class CommentsQueryRepository {
+export class CommentsMongoQueryRepository extends CommentsQueryRepository {
   constructor(
-    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    @InjectModel(CommentMongoEntity.name) private commentModel: Model<CommentDocument>,
     private likesRepository: LikesRepository,
     private blogsRepository: BlogsRepository,
     private postsRepository: PostsRepository,
-  ) {}
+  ) {
+    super();
+  }
 
   public async findById(commentId: string, currentUserId: string = null): Promise<ViewPublicCommentDto | null> {
     const dbComment: CommentDocument | null = await this.commentModel.findOne({ id: commentId, isBanned: false });
@@ -37,9 +38,12 @@ export class CommentsQueryRepository {
       LikeLocation.Comment,
     );
 
-    const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(commentId);
+    const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(
+      commentId,
+      LikeLocation.Comment,
+    );
 
-    return CommentsMapper.toPublicView(
+    return CommentsMapper.toPublicViewFromDomain(
       dbComment,
       likeStatus,
       likesDislikesCount.likesCount,
@@ -56,7 +60,7 @@ export class CommentsQueryRepository {
     const sortValue: 1 | -1 = PaginationHelper.getSortValue(queryObj.sortDirection);
     const filters = { postId, isBanned: false };
 
-    const foundedComments: Comment[] = await this.commentModel
+    const foundedComments: CommentDocument[] = await this.commentModel
       .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
@@ -73,9 +77,10 @@ export class CommentsQueryRepository {
 
         const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(
           comment.id,
+          LikeLocation.Comment,
         );
 
-        return CommentsMapper.toPublicView(
+        return CommentsMapper.toPublicViewFromDomain(
           comment,
           likeStatus,
           likesDislikesCount.likesCount,
@@ -107,7 +112,7 @@ export class CommentsQueryRepository {
     const blogIds = userBlogs.map((blog) => blog.id);
 
     const filters = { blogId: { $in: blogIds } };
-    const foundedComments: Comment[] = await this.commentModel
+    const foundedComments: CommentDocument[] = await this.commentModel
       .find(filters)
       .sort({ [queryObj.sortBy]: sortValue })
       .skip(skipValue)
@@ -124,10 +129,11 @@ export class CommentsQueryRepository {
 
         const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(
           comment.id,
+          LikeLocation.Comment,
         );
 
         const post: PostEntity | null = await this.postsRepository.findById(comment.postId);
-        return CommentsMapper.toBloggerView(
+        return CommentsMapper.toBloggerViewFromDomain(
           comment,
           post,
           likeStatus,

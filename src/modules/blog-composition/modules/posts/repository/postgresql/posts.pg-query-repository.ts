@@ -9,10 +9,14 @@ import { PaginationDto } from '../../../../../../common/dto/pagination';
 import { DbPost } from './types/post';
 import { PaginationHelper } from '../../../../../../common/utils/paginationHelper';
 import { PostEntity } from '../../entities/post.entity';
+import { LikeEntity } from '../../../likes/entities/like.entity';
+import { LikeLocation, LikeStatusType } from '../../../likes/types/like';
+import { LikesDislikesCountDto } from '../../../likes/models/output/likes-dislikes-count.dto';
+import { LikesRepository } from '../../../likes/interfaces/likes.repository';
 
 @Injectable()
 export class PostsPgQueryRepository extends PostsQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {
+  constructor(@InjectDataSource() private dataSource: DataSource, public likesRepository: LikesRepository) {
     super();
   }
 
@@ -29,11 +33,27 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     if (result.length === 0) return null;
 
     const dbPost = result[0];
-
     console.log('dbPost');
     console.log(dbPost);
 
-    return PostMapper.toView(PostMapper.toDomainFromPlainSql(dbPost));
+    const lastLikes: LikeEntity[] | null = await this.likesRepository.getLastLikesInfo(postId, LikeLocation.Post, 3);
+    const likesDislikesCount: LikesDislikesCountDto = await this.likesRepository.getLikesAndDislikesCount(
+      postId,
+      LikeLocation.Post,
+    );
+    const likeStatus: LikeStatusType = await this.likesRepository.getUserLikeStatus(
+      currentUserId,
+      postId,
+      LikeLocation.Post,
+    );
+
+    return PostMapper.toView(
+      PostMapper.toDomainFromPlainSql(dbPost),
+      likeStatus,
+      likesDislikesCount.likesCount,
+      likesDislikesCount.dislikesCount,
+      lastLikes,
+    );
   }
 
   public async findAll(queryObj: QueryDto, currentUserId: string = null): Promise<PaginationDto<ViewPostDto>> {
@@ -49,15 +69,21 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
     const foundedPosts: DbPost[] = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
-    const postEntities: PostEntity[] = foundedPosts.map(PostMapper.toDomainFromPlainSql);
-    const postViewModels: ViewPostDto[] = postEntities.map((postEntity) => PostMapper.toView(postEntity));
+    const postsViewModels: ViewPostDto[] = await Promise.all(
+      foundedPosts.map(async (post) => {
+        return this.findOne(post.id, currentUserId);
+      }),
+    );
+
+    // const postEntities: PostEntity[] = foundedPosts.map(PostMapper.toDomainFromPlainSql);
+    // const postsViewModels: ViewPostDto[] = postEntities.map((postEntity) => PostMapper.toView(postEntity));
 
     return new PaginationDto<ViewPostDto>(
       pagesCount,
       Number(queryObj.pageNumber),
       Number(queryObj.pageSize),
       totalCount,
-      postViewModels,
+      postsViewModels,
     );
   }
 
@@ -162,7 +188,7 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     return await this.dataSource.query(query, [queryObj.pageSize, skipValue]);
   }
 
-  getFilters = (queryObj: QueryDto, skipBannedPosts: boolean, additionalFilters: string[] = []): string => {
+  protected getFilters(queryObj: QueryDto, skipBannedPosts: boolean, additionalFilters: string[] = []): string {
     const sqlFilters = [];
 
     // TODO: change pt.is_banned
@@ -183,5 +209,5 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     }
 
     return '';
-  };
+  }
 }
