@@ -63,10 +63,10 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     const filters = this.getFilters(queryObj, true);
 
     const queryTotalCount = `SELECT count(*) FROM public.post pt LEFT JOIN public.blog bt ON pt.blog_id = bt.id ${filters};`;
-    console.log(queryTotalCount);
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
+    console.log(queryTotalCount);
 
     const foundedPosts: DbPost[] = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
     const postsViewModels: ViewPostDto[] = await Promise.all(
@@ -98,31 +98,37 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
 
     const queryTotalCount = `SELECT count(*) FROM public.post pt LEFT JOIN public.blog bt ON pt.blog_id = bt.id ${filters};`;
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
-
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
-    let findPostQuery =
-      'SELECT pt.title as "title", pt.short_description as "shortDescription", pt.content as "content", ' +
-      'pt.blog_id as "blogId", pt.user_id as "userId", pt.id as "id", pt.created_at as "createdAt", pt.is_banned as "isBanned", ' +
-      'bt.name as "blogName" ' +
-      'FROM public."post" pt ' +
-      'LEFT JOIN public."blog" bt ON pt.blog_id = bt.id ';
-    findPostQuery += filters;
-    findPostQuery += ` ORDER BY "${queryObj.sortBy}" ${sortValue}`;
-    findPostQuery += ' LIMIT $1 ';
-    findPostQuery += ' OFFSET $2;';
-    console.log(findPostQuery);
-    const foundedPosts: DbPost[] = await this.dataSource.query(findPostQuery, [queryObj.pageSize, skipValue]);
-    const postEntities: PostEntity[] = foundedPosts.map(PostMapper.toDomainFromPlainSql);
-    const postViewModels: ViewPostDto[] = postEntities.map((postEntity) => PostMapper.toView(postEntity));
+    // let findPostQuery =
+    //   'SELECT pt.title as "title", pt.short_description as "shortDescription", pt.content as "content", ' +
+    //   'pt.blog_id as "blogId", pt.user_id as "userId", pt.id as "id", pt.created_at as "createdAt", pt.is_banned as "isBanned", ' +
+    //   'bt.name as "blogName" ' +
+    //   'FROM public."post" pt ' +
+    //   'LEFT JOIN public."blog" bt ON pt.blog_id = bt.id ';
+    // findPostQuery += filters;
+    // findPostQuery += ` ORDER BY "${queryObj.sortBy}" ${sortValue}`;
+    // findPostQuery += ' LIMIT $1 ';
+    // findPostQuery += ' OFFSET $2;';
+    // console.log(findPostQuery);
+    // const foundedPosts: DbPost[] = await this.dataSource.query(findPostQuery, [queryObj.pageSize, skipValue]);
+    // const postsEntities: PostEntity[] = foundedPosts.map(PostMapper.toDomainFromPlainSql);
+    // const postsViewModels: ViewPostDto[] = postsEntities.map((postEntity) => PostMapper.toView(postEntity));
+
+    const foundedPosts: DbPost[] = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
+    const postsViewModels: ViewPostDto[] = await Promise.all(
+      foundedPosts.map(async (post) => {
+        return this.findOne(post.id, currentUserId);
+      }),
+    );
 
     return new PaginationDto<ViewPostDto>(
       pagesCount,
       Number(queryObj.pageNumber),
       Number(queryObj.pageSize),
       totalCount,
-      postViewModels,
+      postsViewModels,
     );
   }
 
@@ -138,36 +144,41 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
 
     const queryTotalCount = `SELECT count(*) FROM public.post pt LEFT JOIN public.blog bt ON pt.blog_id = bt.id ${filters};`;
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
-
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
 
-    let findPostQuery =
-      'SELECT pt.title as "title", pt.short_description as "shortDescription", pt.content as "content", ' +
-      'pt.blog_id as "blogId", pt.user_id as "userId", pt.id as "id", pt.created_at as "createdAt", pt.is_banned as "isBanned", ' +
-      'bt.name as "blogName" ' +
-      'FROM public.post pt ' +
-      'LEFT JOIN public.blog bt ON pt.blog_id = bt.id ';
-    findPostQuery += filters;
-    findPostQuery += ` ORDER BY "${queryObj.sortBy}" ${sortValue}`;
-    findPostQuery += ' LIMIT $3 ';
-    findPostQuery += ' OFFSET $4;';
+    // let findPostQuery =
+    //   'SELECT pt.title as "title", pt.short_description as "shortDescription", pt.content as "content", ' +
+    //   'pt.blog_id as "blogId", pt.user_id as "userId", pt.id as "id", pt.created_at as "createdAt", pt.is_banned as "isBanned", ' +
+    //   'bt.name as "blogName" ' +
+    //   'FROM public.post pt ' +
+    //   'LEFT JOIN public.blog bt ON pt.blog_id = bt.id ';
+    // findPostQuery += filters;
+    // findPostQuery += ` ORDER BY "${queryObj.sortBy}" ${sortValue}`;
+    // findPostQuery += ' LIMIT $3 ';
+    // findPostQuery += ' OFFSET $4;';
+    // const foundedPosts: DbPost[] = await this.dataSource.query(findPostQuery, [
+    //   blogId,
+    //   userId,
+    //   queryObj.pageSize,
+    //   skipValue,
+    // ]);
+    // const postsEntities: PostEntity[] = foundedPosts.map(PostMapper.toDomainFromPlainSql);
+    // const postsViewModels: ViewPostDto[] = postsEntities.map((postEntity) => PostMapper.toView(postEntity));
 
-    const foundedPosts: DbPost[] = await this.dataSource.query(findPostQuery, [
-      blogId,
-      userId,
-      queryObj.pageSize,
-      skipValue,
-    ]);
-    const postEntities: PostEntity[] = foundedPosts.map(PostMapper.toDomainFromPlainSql);
-    const postViewModels: ViewPostDto[] = postEntities.map((postEntity) => PostMapper.toView(postEntity));
+    const foundedPosts: DbPost[] = await this.findPostByFilters(filters, queryObj, sortValue, skipValue);
+    const postsViewModels: ViewPostDto[] = await Promise.all(
+      foundedPosts.map(async (post) => {
+        return this.findOne(post.id, userId);
+      }),
+    );
 
     return new PaginationDto<ViewPostDto>(
       pagesCount,
       Number(queryObj.pageNumber),
       Number(queryObj.pageSize),
       totalCount,
-      postViewModels,
+      postsViewModels,
     );
   }
 
