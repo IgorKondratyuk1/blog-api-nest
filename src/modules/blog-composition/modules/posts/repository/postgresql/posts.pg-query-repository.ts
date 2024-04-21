@@ -94,7 +94,7 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
   ): Promise<PaginationDto<ViewPostDto>> {
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
-    const filters = this.getFilters(queryObj, true, blogId, currentUserId);
+    const filters = this.getFilters(queryObj, true, blogId);
 
     const queryTotalCount = `SELECT count(*) FROM public.post pt LEFT JOIN public.blog bt ON pt.blog_id = bt.id ${filters};`;
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
