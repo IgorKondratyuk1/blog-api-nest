@@ -127,7 +127,7 @@ export class PostsController {
       tokenPayload.userLogin,
       updateLikeDto.likeStatus,
     );
-
+    console.log('updateLikeStatus ' + result);
     if (result instanceof CustomErrorDto) throw new HttpException(result.message, result.code);
     if (!result) throw new InternalServerErrorException('Can not update comment');
     return;

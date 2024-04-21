@@ -63,7 +63,7 @@ export class BlogsController {
     const blog = await this.blogsService.findById(id);
     if (!blog) throw new NotFoundException('blog is not found');
 
-    return await this.postsQueryRepository.findPostsOfBlog(id, query, userId);
+    return await this.postsQueryRepository.findPostsOfBlog(id, query, null);
   }
 
   @Get(':id')

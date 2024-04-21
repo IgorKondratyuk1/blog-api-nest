@@ -16,6 +16,8 @@ export class LikesPgRepository extends LikesRepository {
 
   public async save(likeEntity: LikeEntity): Promise<boolean> {
     try {
+      console.log('save');
+      console.log(likeEntity);
       switch (likeEntity.locationName) {
         case LikeLocation.Comment:
           return await this.updateCommentLike(likeEntity);
@@ -43,10 +45,11 @@ export class LikesPgRepository extends LikesRepository {
       ]);
 
       console.log('resultUpdatePostLikeQuery.rowCount');
+      console.log(updatePostLikeQuery);
       console.log(resultUpdatePostLikeQuery.rowCount);
       console.log(resultUpdatePostLikeQuery);
 
-      if (resultUpdatePostLikeQuery.rowCount > 0) return true;
+      if (!!resultUpdatePostLikeQuery.rowCount) return true;
 
       return false;
     } catch (e) {
@@ -180,7 +183,7 @@ export class LikesPgRepository extends LikesRepository {
     console.log('getPostUserLike dbLike');
     console.log(dbLike);
 
-    return LikesMapper.toDomainFromPlainSql(dbLike, LikeLocation.Comment);
+    return LikesMapper.toDomainFromPlainSql(dbLike, LikeLocation.Post);
   }
 
   public async getUserLikeStatus(

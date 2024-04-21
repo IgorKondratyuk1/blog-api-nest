@@ -131,7 +131,7 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     queryObj: QueryDto,
     userId: string,
   ): Promise<PaginationDto<ViewPostDto>> {
-    console.log(queryObj);
+    //console.log(queryObj);
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
     const filters = this.getFilters(queryObj, true, blogId, userId);

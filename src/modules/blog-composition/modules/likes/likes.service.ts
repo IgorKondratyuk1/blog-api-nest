@@ -17,15 +17,11 @@ export class LikesService {
     switch (status) {
       case LikeStatus.Like:
       case LikeStatus.Dislike:
-        const updateResult = await this.createOrUpdateLike(userId, userLogin, locationName, locationId, status);
-        return updateResult;
-        break;
+        return await this.createOrUpdateLike(userId, userLogin, locationName, locationId, status);
       case LikeStatus.None:
-        const deleteResult = await this.removeLike(userId, locationName, locationId);
-        return deleteResult;
-        break;
+        return await this.removeLike(userId, locationName, locationId);
       default:
-        //new CustomErrorDto(HttpStatus.NOT_FOUND, `like status (${status}) not found`);
+        console.log('Wrong status in like method ' + status);
         return false;
     }
   }

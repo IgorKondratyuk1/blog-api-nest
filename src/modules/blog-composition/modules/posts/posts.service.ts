@@ -58,9 +58,7 @@ export class PostsService {
     if (!post) return new CustomErrorDto(HttpStatus.NOT_FOUND, 'post not found');
 
     const result = await this.likesService.like(userId, userLogin, LikeLocation.Post, post.id, status);
-    if (!result) return false;
-
-    return true;
+    return result;
   }
 
   async updateWithBlogId(
