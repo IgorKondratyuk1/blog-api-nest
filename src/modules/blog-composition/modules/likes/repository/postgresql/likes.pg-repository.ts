@@ -214,8 +214,8 @@ export class LikesPgRepository extends LikesRepository {
     if (result.length === 0) return 0;
     const count = parseInt(result[0].count, 10);
 
-    console.log('getLikeOrDislikesCountOnComment count');
-    console.log(count);
+    // console.log('getLikeOrDislikesCountOnComment count');
+    // console.log(count);
 
     return count;
   }

@@ -72,9 +72,13 @@ export class CommentsPgQueryRepository extends CommentsQueryRepository {
   ): Promise<PaginationDto<ViewPublicCommentDto>> {
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
-    const filters = this.getFilters(queryObj, true);
+    const filters = this.getFilters(queryObj, true, currentUserId, null, postId);
 
-    const queryTotalCount = `SELECT count(*) FROM public.comment ct ${filters};`;
+    const queryTotalCount =
+      'SELECT count(*) FROM public.comment ct ' +
+      'LEFT JOIN public."user" u ON u.id = ct.user_id ' +
+      'LEFT JOIN public."account" acc ON acc.id = u.account_id ' +
+      `LEFT JOIN public."post" pt ON pt.id = ct.post_id ${filters}`;
     console.log(queryTotalCount);
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
     const totalCount = Number(resultTotalCount[0].count);
@@ -211,6 +215,7 @@ export class CommentsPgQueryRepository extends CommentsQueryRepository {
     skipBannedComments: boolean,
     userId: string | null = null,
     blogIds: string[] | null = null,
+    postId: string | null = null,
   ): string {
     const sqlFilters = [];
 
@@ -220,7 +225,7 @@ export class CommentsPgQueryRepository extends CommentsQueryRepository {
     }
 
     if (userId) {
-      sqlFilters.push(`user_id = '${userId}'`);
+      sqlFilters.push(`ct.user_id = '${userId}'`);
     }
 
     if (blogIds && blogIds.length > 0) {
@@ -229,6 +234,10 @@ export class CommentsPgQueryRepository extends CommentsQueryRepository {
 
     if (queryObj.searchNameTerm) {
       sqlFilters.push(`name ILIKE '%${queryObj.searchNameTerm}%'`);
+    }
+
+    if (postId) {
+      sqlFilters.push(`pt.id = '${postId}'`);
     }
 
     if (sqlFilters.length > 0) {

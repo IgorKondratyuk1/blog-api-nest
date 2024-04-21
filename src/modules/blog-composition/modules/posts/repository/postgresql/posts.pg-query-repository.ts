@@ -94,10 +94,10 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
   ): Promise<PaginationDto<ViewPostDto>> {
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
-    const filters = this.getFilters(queryObj, true, ['pt.blog_id=$1', 'pt.is_banned = FALSE']);
+    const filters = this.getFilters(queryObj, true, blogId, currentUserId);
 
     const queryTotalCount = `SELECT count(*) FROM public.post pt LEFT JOIN public.blog bt ON pt.blog_id = bt.id ${filters};`;
-    const resultTotalCount = await this.dataSource.query(queryTotalCount, [blogId]);
+    const resultTotalCount = await this.dataSource.query(queryTotalCount);
 
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
@@ -110,10 +110,10 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
       'LEFT JOIN public."blog" bt ON pt.blog_id = bt.id ';
     findPostQuery += filters;
     findPostQuery += ` ORDER BY "${queryObj.sortBy}" ${sortValue}`;
-    findPostQuery += ' LIMIT $2 ';
-    findPostQuery += ' OFFSET $3;';
+    findPostQuery += ' LIMIT $1 ';
+    findPostQuery += ' OFFSET $2;';
     console.log(findPostQuery);
-    const foundedPosts: DbPost[] = await this.dataSource.query(findPostQuery, [blogId, queryObj.pageSize, skipValue]);
+    const foundedPosts: DbPost[] = await this.dataSource.query(findPostQuery, [queryObj.pageSize, skipValue]);
     const postEntities: PostEntity[] = foundedPosts.map(PostMapper.toDomainFromPlainSql);
     const postViewModels: ViewPostDto[] = postEntities.map((postEntity) => PostMapper.toView(postEntity));
 
@@ -134,10 +134,10 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     console.log(queryObj);
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
-    const filters = this.getFilters(queryObj, true, ['pt.blog_id=$1', 'pt.user_id=$2', 'pt.is_banned=FALSE']);
+    const filters = this.getFilters(queryObj, true, blogId, userId);
 
     const queryTotalCount = `SELECT count(*) FROM public.post pt LEFT JOIN public.blog bt ON pt.blog_id = bt.id ${filters};`;
-    const resultTotalCount = await this.dataSource.query(queryTotalCount, [blogId, userId]);
+    const resultTotalCount = await this.dataSource.query(queryTotalCount);
 
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
@@ -188,7 +188,12 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
     return await this.dataSource.query(query, [queryObj.pageSize, skipValue]);
   }
 
-  protected getFilters(queryObj: QueryDto, skipBannedPosts: boolean, additionalFilters: string[] = []): string {
+  protected getFilters(
+    queryObj: QueryDto,
+    skipBannedPosts: boolean,
+    blogId: string | null = null,
+    userId: string | null = null,
+  ): string {
     const sqlFilters = [];
 
     // TODO: change pt.is_banned
@@ -196,13 +201,21 @@ export class PostsPgQueryRepository extends PostsQueryRepository {
       sqlFilters.push('pt.is_banned = FALSE');
     }
 
+    if (userId) {
+      sqlFilters.push(`pt.user_id = '${userId}'`);
+    }
+
+    if (blogId) {
+      sqlFilters.push(`pt.blog_id = '${blogId}'`);
+    }
+
     if (queryObj.searchNameTerm) {
       sqlFilters.push(`name ILIKE '%${queryObj.searchNameTerm}%'`);
     }
 
-    if (additionalFilters.length > 0) {
-      sqlFilters.push(...additionalFilters);
-    }
+    // if (additionalFilters.length > 0) {
+    //   sqlFilters.push(...additionalFilters);
+    // }
 
     if (sqlFilters.length > 0) {
       return 'WHERE ' + sqlFilters.join(' AND ');
