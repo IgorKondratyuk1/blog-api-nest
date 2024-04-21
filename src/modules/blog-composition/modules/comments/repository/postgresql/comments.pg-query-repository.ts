@@ -72,14 +72,14 @@ export class CommentsPgQueryRepository extends CommentsQueryRepository {
   ): Promise<PaginationDto<ViewPublicCommentDto>> {
     const skipValue: number = PaginationHelper.getSkipValue(queryObj.pageNumber, queryObj.pageSize);
     const sortValue: string = queryObj.sortDirection.toUpperCase();
-    const filters = this.getFilters(queryObj, true, currentUserId, null, postId);
+    const filters = this.getFilters(queryObj, true, null, null, postId);
 
     const queryTotalCount =
       'SELECT count(*) FROM public.comment ct ' +
       'LEFT JOIN public."user" u ON u.id = ct.user_id ' +
       'LEFT JOIN public."account" acc ON acc.id = u.account_id ' +
       `LEFT JOIN public."post" pt ON pt.id = ct.post_id ${filters}`;
-    console.log(queryTotalCount);
+    //console.log(queryTotalCount);
     const resultTotalCount = await this.dataSource.query(queryTotalCount);
     const totalCount = Number(resultTotalCount[0].count);
     const pagesCount = PaginationHelper.getPagesCount(totalCount, queryObj.pageSize);
